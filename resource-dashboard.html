@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Caregiver Dashboard — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="resource">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1 id="cgName">My Dashboard</h1><p class="subtitle" id="cgRole">Nurse</p></div>
+      </div>
+
+      <div class="grid grid-cols-4 mb-8" id="dashStats"></div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Today's Visits</h3>
+          <div class="space-y-3" id="todayVisits"></div>
+        </div>
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Recent Completed</h3>
+          <div class="space-y-3" id="completedVisits"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('resource', 'resource-dashboard.html');
+    const cg = CURRENT_CAREGIVER;
+    document.getElementById('cgName').textContent = 'Welcome, ' + cg.name;
+    document.getElementById('cgRole').textContent = cg.type.replace('_',' ');
+    const myBookings = BOOKINGS.filter(b => b.caregiverId === cg.id);
+    const active = myBookings.filter(b => ['confirmed','in_progress'].includes(b.status));
+    const completed = myBookings.filter(b => b.status === 'completed');
+    const earnings = completed.filter(b => b.paymentStatus === 'paid').reduce((s,b) => s + b.price, 0);
+
+    document.getElementById('dashStats').innerHTML = [
+      { label: 'Active Visits', value: active.length, icon: '📅', color: 'blue' },
+      { label: 'Completed', value: completed.length, icon: '✓', color: 'emerald' },
+      { label: 'Earnings', value: fmtINR(earnings), icon: '💰', color: 'amber' },
+      { label: 'Rating', value: '★ ' + cg.rating, icon: '⭐', color: 'rose' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    document.getElementById('todayVisits').innerHTML = (active.length ? active : BOOKINGS.filter(b => ['confirmed','pending'].includes(b.status)).slice(0,3)).map(b => `
+      <div class="card" style="padding:1rem;display:flex;align-items:center;gap:.75rem;border:1px solid var(--border)">
+        <div style="flex:1">
+          <p style="font-weight:600;font-size:.875rem">${b.service}</p>
+          <p class="text-xs text-muted">${b.userName} · ${b.address}</p>
+          <p class="text-xs text-muted">${b.date} ${b.time}</p>
+        </div>
+        ${b.status === 'in_progress'
+          ? `<button class="btn btn-sm btn-primary" onclick="toast('Visit completed')">Complete</button>`
+          : `<button class="btn btn-sm btn-outline" onclick="toast('Visit started')">Start</button>`}
+      </div>
+    `).join('');
+
+    document.getElementById('completedVisits').innerHTML = (completed.length ? completed : BOOKINGS.filter(b => b.status === 'completed').slice(0,3)).map(b => `
+      <div class="flex items-center gap-3 pb-4 border-b" style="border-color:var(--border)">
+        <div style="width:2.5rem;height:2.5rem;border-radius:.625rem;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;flex-shrink:0">✓</div>
+        <div style="flex:1"><p style="font-size:.875rem;font-weight:600">${b.service}</p><p class="text-xs text-muted">${b.userName} · ${b.date}</p></div>
+        <p style="font-weight:700;color:var(--primary)">${fmtINR(b.price)}</p>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>

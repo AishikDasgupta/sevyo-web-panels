@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>My Profile — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="user">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>My Profile</h1><p class="subtitle">Your account information</p></div>
+        <button class="btn btn-primary" id="saveBtn" onclick="saveProfile()">Save Changes</button>
+      </div>
+
+      <div class="max-w-md">
+        <div class="card mb-6 flex items-center gap-4">
+          <div class="avatar-placeholder" style="width:4rem;height:4rem;background:var(--primary);font-size:2rem">J</div>
+          <div>
+            <h3 style="font-size:1.125rem" id="pName">${CURRENT_USER.name}</h3>
+            <p class="text-sm text-muted">${CURRENT_USER.email}</p>
+            <p class="text-xs text-muted mt-1" style="text-transform:capitalize">Role: ${CURRENT_USER.role}</p>
+          </div>
+        </div>
+
+        <div class="card space-y-4">
+          <div><label class="field-label">Full Name</label><input class="input" id="fName" value="${CURRENT_USER.name}" disabled style="background:var(--muted);color:var(--muted-fg)"><p class="text-xs text-muted mt-1">Name is managed by your account settings.</p></div>
+          <div><label class="field-label">Email</label><input class="input" value="${CURRENT_USER.email}" disabled style="background:var(--muted);color:var(--muted-fg)"></div>
+          <div><label class="field-label">Phone</label><input class="input" id="fPhone" value="${CURRENT_USER.phone}"></div>
+          <div><label class="field-label">Default Address</label><input class="input" id="fAddr" value="${CURRENT_USER.address}"></div>
+        </div>
+
+        <button class="btn btn-outline btn-block mt-6" style="color:#e11d48;border-color:#fecdd3" onclick="toast('Signed out')">Sign Out</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('user', 'user-profile.html');
+    function saveProfile() { toast('Profile saved!'); }
+  </script>
+</body>
+</html>

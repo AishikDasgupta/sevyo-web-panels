@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Admin Bookings — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="admin">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>Bookings</h1><p class="subtitle">All platform bookings</p></div>
+      </div>
+
+      <div class="grid grid-cols-4 mb-8" id="bookingStats"></div>
+
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterBookings('all',this)">All</button>
+        <button class="filter-chip" onclick="filterBookings('broadcast',this)">Broadcast</button>
+        <button class="filter-chip" onclick="filterBookings('confirmed',this)">Confirmed</button>
+        <button class="filter-chip" onclick="filterBookings('in_progress',this)">In Progress</button>
+        <button class="filter-chip" onclick="filterBookings('completed',this)">Completed</button>
+        <button class="filter-chip" onclick="filterBookings('cancelled',this)">Cancelled</button>
+      </div>
+
+      <div class="space-y-3" id="bookingList"></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('admin', 'admin-bookings.html');
+    let activeFilter = 'all';
+
+    const revenue = BOOKINGS.filter(b => b.paymentStatus === 'paid').reduce((s,b) => s + b.price, 0);
+    document.getElementById('bookingStats').innerHTML = [
+      { label: 'Total', value: BOOKINGS.length, icon: '📋', color: 'blue' },
+      { label: 'Active', value: BOOKINGS.filter(b => ['confirmed','in_progress','pending','broadcast'].includes(b.status)).length, icon: '⚡', color: 'amber' },
+      { label: 'Completed', value: BOOKINGS.filter(b => b.status === 'completed').length, icon: '✓', color: 'emerald' },
+      { label: 'Revenue', value: fmtINR(revenue), icon: '💰', color: 'emerald' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    function renderList() {
+      const list = activeFilter === 'all' ? BOOKINGS : BOOKINGS.filter(b => b.status === activeFilter);
+      document.getElementById('bookingList').innerHTML = list.length === 0
+        ? `<div class="empty-state"><p class="text-muted">No bookings found.</p></div>`
+        : list.map(b => `
+          <div class="card flex items-center gap-4" style="padding:1rem 1.25rem">
+            <div style="width:2.5rem;height:2.5rem;border-radius:.625rem;background:hsl(220 72% 41% / .1);display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0">💉</div>
+            <div style="flex:1;min-width:0">
+              <div class="flex items-center gap-2 mb-1">
+                <p style="font-weight:600;font-size:.875rem">${b.service}</p>
+                ${statusBadge(b.status)}
+              </div>
+              <p class="text-xs text-muted">${b.userName} · ${b.address} · ${b.date} ${b.time}</p>
+            </div>
+            <div class="text-right">
+              <p style="font-weight:700;color:var(--primary)">${fmtINR(b.price)}</p>
+              <span class="badge ${b.paymentStatus === 'paid' ? 'badge-paid' : 'badge-unpaid'}">${b.paymentStatus === 'paid' ? 'Paid' : 'Pending'}</span>
+            </div>
+            ${['confirmed','in_progress','pending'].includes(b.status) ? `<button class="btn btn-sm btn-danger" onclick="cancelBooking('${b.id}')">Cancel</button>` : ''}
+          </div>
+        `).join('');
+    }
+    function filterBookings(s, btn) {
+      activeFilter = s;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      renderList();
+    }
+    function cancelBooking(id) { toast('Booking ' + id + ' cancelled'); }
+    renderList();
+  </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sevyo — Sign In</title>
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="auth-left-content">
+        <img src="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/e2d818e6a_Web_Photo_Editor_1-removebg-preview.png" alt="Sevyo" class="auth-left-logo">
+        <h2 class="auth-left-title">Professional Medical Care<br>at Your Doorstep</h2>
+        <ul class="auth-left-features">
+          <li><span class="check-icon">✓</span> Certified & verified nurses</li>
+          <li><span class="check-icon">✓</span> 30-minute response time</li>
+          <li><span class="check-icon">✓</span> 16+ instant medical services</li>
+          <li><span class="check-icon">✓</span> Available 24/7</li>
+        </ul>
+        <p class="auth-left-copy">© 2026 Sevyo Health. Professional Care at Home.</p>
+      </div>
+    </div>
+    <div class="auth-right">
+      <a href="index.html" class="auth-back">← Back to home</a>
+      <div class="auth-card">
+        <a href="index.html" class="auth-logo-link"><img src="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/e2d818e6a_Web_Photo_Editor_1-removebg-preview.png" alt="Sevyo" class="auth-logo"></a>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabSignin" onclick="switchMode('signin')">Sign In</button>
+          <button class="auth-tab" id="tabSignup" onclick="switchMode('signup')">Sign Up</button>
+        </div>
+
+        <div id="roleSelector" class="hidden mb-6">
+          <label class="field-label">I am a…</label>
+          <div class="role-grid">
+            <button class="role-card active" data-role="user" onclick="selectRole(this)">
+              <div style="font-size:1.5rem">👤</div>
+              <p style="font-size:.8rem;font-weight:600;margin-top:.25rem">Patient / Family</p>
+            </button>
+            <button class="role-card" data-role="vendor" onclick="selectRole(this)">
+              <div style="font-size:1.5rem">🏢</div>
+              <p style="font-size:.8rem;font-weight:600;margin-top:.25rem">Nursing Agency</p>
+            </button>
+            <button class="role-card" data-role="resource" onclick="selectRole(this)">
+              <div style="font-size:1.5rem">🩺</div>
+              <p style="font-size:.8rem;font-weight:600;margin-top:.25rem">Nurse / Caregiver</p>
+            </button>
+            <button class="role-card" data-role="admin" onclick="selectRole(this)">
+              <div style="font-size:1.5rem">⚙️</div>
+              <p style="font-size:.8rem;font-weight:600;margin-top:.25rem">Admin</p>
+            </button>
+          </div>
+        </div>
+
+        <form id="authForm" onsubmit="handleAuth(event)">
+          <div id="nameField" class="hidden mb-4">
+            <label class="field-label">Full Name</label>
+            <input class="input" type="text" placeholder="John Doe" required>
+          </div>
+          <div class="mb-4">
+            <label class="field-label">Email</label>
+            <input class="input" type="email" placeholder="you@example.com" required>
+          </div>
+          <div class="mb-6">
+            <label class="field-label">Password</label>
+            <input class="input" type="password" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">Sign In</button>
+        </form>
+
+        <p class="text-center text-muted text-sm mt-6">
+          <span id="toggleText">New to Sevyo?</span>
+          <a href="#" onclick="switchMode('signup');return false" id="toggleLink" style="color:var(--primary);font-weight:600">Create an account</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    let mode = 'signin';
+    let selectedRole = 'user';
+
+    (function() {
+      const q = new URLSearchParams(location.search).get('mode');
+      if (q === 'signup') switchMode('signup');
+    })();
+
+    function switchMode(m) {
+      mode = m;
+      const isSignup = m === 'signup';
+      document.getElementById('tabSignin').classList.toggle('active', !isSignup);
+      document.getElementById('tabSignup').classList.toggle('active', isSignup);
+      document.getElementById('nameField').classList.toggle('hidden', !isSignup);
+      document.getElementById('roleSelector').classList.toggle('hidden', !isSignup);
+      document.getElementById('submitBtn').textContent = isSignup ? 'Create Account' : 'Sign In';
+      document.getElementById('toggleText').textContent = isSignup ? 'Already have an account?' : 'New to Sevyo?';
+      document.getElementById('toggleLink').textContent = isSignup ? 'Sign In' : 'Create an account';
+      document.getElementById('toggleLink').onclick = (e) => { e.preventDefault(); switchMode(isSignup ? 'signin' : 'signup'); };
+    }
+
+    function selectRole(btn) {
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      selectedRole = btn.dataset.role;
+    }
+
+    function handleAuth(e) {
+      e.preventDefault();
+      const routes = { user: 'user-home.html', vendor: 'vendor-dashboard.html', resource: 'resource-dashboard.html', admin: 'admin-dashboard.html' };
+      window.location.href = routes[selectedRole] || 'user-home.html';
+    }
+  </script>
+</body>
+</html>

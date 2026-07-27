@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Vendor Finance — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="vendor">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>Finance</h1><p class="subtitle">Revenue and payout overview</p></div>
+        <button class="btn btn-outline" onclick="toast('Exporting report…')">Export Report</button>
+      </div>
+
+      <div class="grid grid-cols-4 mb-8" id="finStats"></div>
+
+      <div class="grid" style="grid-template-columns:2fr 1fr;margin-bottom:1.5rem">
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Monthly Revenue</h3>
+          <div class="bar-chart" id="revChart"></div>
+        </div>
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Payment Status</h3>
+          <div class="space-y-3" id="payStatus"></div>
+        </div>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <h3 style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)">Transaction History</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Booking</th><th>Patient</th><th>Service</th><th>Date</th><th>Amount</th><th>Payment</th></tr></thead>
+            <tbody id="txnRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('vendor', 'vendor-finance.html');
+    const myBookings = BOOKINGS.filter(b => b.vendorId === CURRENT_VENDOR.id);
+    const totalRev = myBookings.filter(b => b.paymentStatus === 'paid').reduce((s,b) => s + b.price, 0);
+    const pending = myBookings.filter(b => b.paymentStatus === 'pending').reduce((s,b) => s + b.price, 0);
+
+    document.getElementById('finStats').innerHTML = [
+      { label: 'Total Revenue', value: fmtINR(totalRev), icon: '💰', color: 'emerald' },
+      { label: 'Pending Payouts', value: fmtINR(pending), icon: '⏳', color: 'amber' },
+      { label: 'Transactions', value: myBookings.length, icon: '📋', color: 'blue' },
+      { label: 'Avg Booking', value: fmtINR(myBookings.length ? Math.round(totalRev / myBookings.length) : 0), icon: '📊', color: 'rose' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    const maxRev = Math.max(...REVENUE_DATA.map(d => d.revenue));
+    document.getElementById('revChart').innerHTML = REVENUE_DATA.map(d => `<div class="bar-col"><div class="bar" style="height:${(d.revenue/maxRev)*100}%"></div><span class="bar-label">${d.month}</span></div>`).join('');
+
+    const paid = myBookings.filter(b => b.paymentStatus === 'paid').length;
+    const unpaid = myBookings.filter(b => b.paymentStatus === 'pending').length;
+    document.getElementById('payStatus').innerHTML = [
+      { label: 'Paid', count: paid, color: '#059669' },
+      { label: 'Pending', count: unpaid, color: '#d97706' },
+    ].map(p => `<div><div class="flex justify-between mb-1"><span class="text-sm">${p.label}</span><span class="text-sm font-semibold">${p.count}</span></div><div class="progress-track"><div class="progress-fill" style="width:${myBookings.length ? (p.count/myBookings.length)*100 : 0}%;background:${p.color}"></div></div></div>`).join('');
+
+    document.getElementById('txnRows').innerHTML = myBookings.map(b => `
+      <tr>
+        <td class="font-semibold">${b.id}</td>
+        <td class="text-sm">${b.userName}</td>
+        <td class="text-sm">${b.service}</td>
+        <td class="text-sm">${b.date}</td>
+        <td class="font-semibold">${fmtINR(b.price)}</td>
+        <td>${statusBadge(b.paymentStatus)}</td>
+      </tr>
+    `).join('');
+  </script>
+</body>
+</html>

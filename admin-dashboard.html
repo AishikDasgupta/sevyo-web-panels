@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="admin">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>Admin Dashboard</h1><p class="subtitle">Platform overview and analytics</p></div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-4" id="kpiGrid" style="margin-bottom:1.5rem"></div>
+
+      <!-- Metrics row 2 -->
+      <div class="grid grid-cols-4" id="metricsGrid" style="margin-bottom:1.5rem"></div>
+
+      <!-- Charts -->
+      <div class="grid" style="grid-template-columns:2fr 1fr;margin-bottom:1.5rem">
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Revenue Trend</h3>
+          <div class="bar-chart" id="revenueChart"></div>
+        </div>
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Bookings by Type</h3>
+          <div class="donut-wrap" id="typeDonut"></div>
+        </div>
+      </div>
+
+      <!-- Recent + Top caregivers -->
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Recent Bookings</h3>
+          <div class="space-y-3" id="recentBookings"></div>
+        </div>
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Top Caregivers</h3>
+          <div class="space-y-3" id="topCaregivers"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('admin', 'admin-dashboard.html');
+
+    const kpis = [
+      { label: 'Revenue Collected', value: fmtINR(ADMIN_STATS.totalRevenue), icon: '💰', gradient: 'linear-gradient(135deg,#2563eb,#1e40af)' },
+      { label: 'Active Bookings', value: ADMIN_STATS.activeBookings, icon: '📅', gradient: 'linear-gradient(135deg,#7c3aed,#5b21b6)' },
+      { label: 'Registered Users', value: ADMIN_STATS.totalUsers, icon: '👥', gradient: 'linear-gradient(135deg,#059669,#047857)' },
+      { label: 'Avg Rating', value: '★ ' + ADMIN_STATS.satisfactionRate, icon: '⭐', gradient: 'linear-gradient(135deg,#f43f5e,#e11d48)' },
+    ];
+    document.getElementById('kpiGrid').innerHTML = kpis.map(k => `
+      <div class="stat-card-gradient" style="background:${k.gradient}">
+        <div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div>
+        <div class="stat-icon" style="font-size:1.25rem">${k.icon}</div>
+      </div>
+    `).join('');
+
+    // Metrics row 2
+    const metrics = [
+      { label: 'Total Bookings', value: ADMIN_STATS.totalBookings, icon: '📊', color: 'blue' },
+      { label: 'Vendors', value: ADMIN_STATS.totalVendors, icon: '🏢', color: 'violet' },
+      { label: 'Caregivers', value: ADMIN_STATS.totalCaregivers, icon: '🩺', color: 'emerald' },
+      { label: 'Completed', value: BOOKINGS.filter(b => b.status === 'completed').length, icon: '📈', color: 'amber' },
+    ];
+    document.getElementById('metricsGrid').innerHTML = metrics.map(m => `
+      <div class="stat-card">
+        <div><p class="stat-label">${m.label}</p><p class="stat-value">${m.value}</p></div>
+        <div class="stat-icon ${m.color}" style="font-size:1.25rem">${m.icon}</div>
+      </div>
+    `).join('');
+
+    // Revenue bar chart
+    const maxRev = Math.max(...REVENUE_DATA.map(d => d.revenue));
+    document.getElementById('revenueChart').innerHTML = REVENUE_DATA.map(d => `
+      <div class="bar-col">
+        <div class="bar" style="height:${(d.revenue / maxRev) * 100}%"></div>
+        <span class="bar-label">${d.month}</span>
+      </div>
+    `).join('');
+
+    // Donut (CSS conic gradient)
+    let acc = 0; const total = BOOKINGS_BY_TYPE.reduce((s, d) => s + d.value, 0);
+    const stops = BOOKINGS_BY_TYPE.map(d => {
+      const start = (acc / total) * 360; acc += d.value; const end = (acc / total) * 360;
+      return `${d.color} ${start}deg ${end}deg`;
+    }).join(', ');
+    document.getElementById('typeDonut').innerHTML = `
+      <div class="donut" style="background:conic-gradient(${stops})">
+        <div class="donut-center"><span style="font-size:1.5rem;font-weight:700">${total}%</span><span class="text-xs text-muted">Total</span></div>
+      </div>
+      <div class="donut-legend">
+        ${BOOKINGS_BY_TYPE.map(d => `<div class="leg"><span class="dot" style="background:${d.color}"></span>${d.name} — ${d.value}%</div>`).join('')}
+      </div>
+    `;
+
+    // Recent bookings
+    document.getElementById('recentBookings').innerHTML = BOOKINGS.slice(0, 5).map(b => `
+      <div class="flex items-center gap-3 pb-4 border-b" style="border-color:var(--border)">
+        <div style="flex:1">
+          <p style="font-size:.875rem;font-weight:600">${b.service}</p>
+          <p class="text-xs text-muted">${b.userName} · ${b.date}</p>
+        </div>
+        ${statusBadge(b.status)}
+      </div>
+    `).join('');
+
+    // Top caregivers
+    document.getElementById('topCaregivers').innerHTML = [...CAREGIVERS].sort((a,b) => b.rating - a.rating).slice(0, 5).map(c => `
+      <div class="flex items-center gap-3 pb-4 border-b" style="border-color:var(--border)">
+        ${avatarOrInitial(c, 36)}
+        <div style="flex:1">
+          <p style="font-size:.875rem;font-weight:600">${c.name}</p>
+          <p class="text-xs text-muted">${c.vendor}</p>
+        </div>
+        <div class="text-right"><span style="color:#fbbf24">★</span> ${c.rating}</div>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>

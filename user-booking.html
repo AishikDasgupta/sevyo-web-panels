@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Book Care — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="user">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content" id="content">
+      <div class="loading-center"><div class="spinner spinner-lg"></div></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('user', 'user-booking.html');
+    const id = parseInt(getQueryParam('id') || '1');
+    const cg = CAREGIVERS.find(c => c.id === id) || CAREGIVERS[0];
+    let step = 1;
+
+    document.getElementById('content').innerHTML = `
+      <div class="page-header"><div><h1>Book ${cg.name}</h1><p class="subtitle">${cg.vendor} · ${fmtINR(cg.price)}/hr</p></div></div>
+
+      <div class="max-w-2xl">
+        <div class="flex items-center gap-2 mb-8" id="steps">
+          <div class="flex items-center gap-2"><span class="step-dot active" data-s="1">1</span><span class="text-sm font-semibold">Schedule</span></div>
+          <div style="flex:1;height:2px;background:var(--border)"></div>
+          <div class="flex items-center gap-2"><span class="step-dot" data-s="2">2</span><span class="text-sm">Agency</span></div>
+          <div style="flex:1;height:2px;background:var(--border)"></div>
+          <div class="flex items-center gap-2"><span class="step-dot" data-s="3">3</span><span class="text-sm">Payment</span></div>
+          <div style="flex:1;height:2px;background:var(--border)"></div>
+          <div class="flex items-center gap-2"><span class="step-dot" data-s="4">4</span><span class="text-sm">Confirm</span></div>
+        </div>
+
+        <div id="stepContent"></div>
+      </div>
+    `;
+
+    // inject step dot style
+    const style = document.createElement('style');
+    style.textContent = '.step-dot{width:2rem;height:2rem;border-radius:999px;background:var(--muted);color:var(--muted-fg);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}.step-dot.active{background:var(--primary);color:#fff}';
+    document.head.appendChild(style);
+
+    function renderStep() {
+      document.querySelectorAll('.step-dot').forEach(d => d.classList.toggle('active', parseInt(d.dataset.s) <= step));
+      const c = document.getElementById('stepContent');
+      if (step === 1) {
+        c.innerHTML = `
+          <div class="card card-pad-lg space-y-4">
+            <div><label class="field-label">Service</label><input class="input" id="bService" value="${cg.specializations[0] || 'Home care'}"></div>
+            <div class="grid grid-cols-2">
+              <div><label class="field-label">Date</label><input class="input" type="date" id="bDate" value="2026-07-25"></div>
+              <div><label class="field-label">Time</label><input class="input" type="time" id="bTime" value="09:00"></div>
+            </div>
+            <div><label class="field-label">Duration (hours)</label><input class="input" type="number" id="bDur" value="2" min="1"></div>
+            <div><label class="field-label">Notes</label><textarea class="textarea" id="bNotes" placeholder="Any special requirements…"></textarea></div>
+          </div>
+          <button class="btn btn-primary btn-block btn-lg mt-4" onclick="next()">Continue</button>
+        `;
+      } else if (step === 2) {
+        c.innerHTML = `
+          <div class="card card-pad-lg space-y-3">
+            <p class="text-sm text-muted mb-2">Recommended agencies for this caregiver:</p>
+            ${VENDORS.filter(v => v.status === 'active').map(v => `
+              <label class="flex items-center gap-3 p-3 rounded-xl border" style="border-color:var(--border);cursor:pointer">
+                <input type="radio" name="agency" value="${v.id}" ${v.id === cg.vendorId ? 'checked' : ''}>
+                <span style="font-size:1.5rem">${v.logo}</span>
+                <div style="flex:1"><p style="font-weight:600;font-size:.875rem">${v.name}</p><p class="text-xs text-muted">${v.location} · ★ ${v.rating}</p></div>
+              </label>
+            `).join('')}
+          </div>
+          <div class="flex gap-3 mt-4"><button class="btn btn-outline btn-block" onclick="back()">Back</button><button class="btn btn-primary btn-block" onclick="next()">Continue</button></div>
+        `;
+      } else if (step === 3) {
+        const dur = parseInt(document.getElementById('bDur')?.value || 2);
+        const total = cg.price * dur;
+        c.innerHTML = `
+          <div class="card card-pad-lg space-y-4">
+            <div><label class="field-label">Payment Method</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 p-3 rounded-xl border" style="border-color:var(--border);cursor:pointer"><input type="radio" name="pay" value="cash" checked> Cash on visit</label>
+                <label class="flex items-center gap-2 p-3 rounded-xl border" style="border-color:var(--border);cursor:pointer"><input type="radio" name="pay" value="online"> Pay online</label>
+              </div>
+            </div>
+            <div class="pt-4 border-t" style="border-color:var(--border)">
+              <div class="flex justify-between mb-1"><span class="text-sm text-muted">Rate</span><span class="text-sm">${fmtINR(cg.price)}/hr</span></div>
+              <div class="flex justify-between mb-1"><span class="text-sm text-muted">Duration</span><span class="text-sm">${dur} hours</span></div>
+              <div class="flex justify-between"><span style="font-weight:700">Total</span><span style="font-weight:700;font-size:1.25rem;color:var(--primary)">${fmtINR(total)}</span></div>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-4"><button class="btn btn-outline btn-block" onclick="back()">Back</button><button class="btn btn-primary btn-block" onclick="next()">Review</button></div>
+        `;
+      } else if (step === 4) {
+        const dur = 2;
+        const total = cg.price * dur;
+        c.innerHTML = `
+          <div class="card card-pad-lg text-center" style="padding:2.5rem">
+            <div style="width:4rem;height:4rem;border-radius:999px;background:#ecfdf5;color:#059669;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem">✓</div>
+            <h2 style="font-size:1.5rem;margin-bottom:.5rem">Booking Confirmed!</h2>
+            <p class="text-muted mb-6">Your booking reference is <strong>BK-008</strong></p>
+            <div class="text-left space-y-2 mb-6" style="max-width:20rem;margin:0 auto">
+              <div class="flex justify-between"><span class="text-sm text-muted">Caregiver</span><span class="text-sm font-semibold">${cg.name}</span></div>
+              <div class="flex justify-between"><span class="text-sm text-muted">Service</span><span class="text-sm font-semibold">Home care</span></div>
+              <div class="flex justify-between"><span class="text-sm text-muted">Date</span><span class="text-sm font-semibold">25 Jul, 9:00 AM</span></div>
+              <div class="flex justify-between"><span class="text-sm text-muted">Total</span><span class="text-sm font-semibold">${fmtINR(total)}</span></div>
+            </div>
+            <a href="user-bookings.html" class="btn btn-primary btn-block btn-lg">View My Bookings</a>
+          </div>
+        `;
+      }
+    }
+
+    function next() { if (step < 4) { step++; renderStep(); if (step === 4) toast('Booking confirmed!'); } }
+    function back() { if (step > 1) { step--; renderStep(); } }
+    renderStep();
+  </script>
+</body>
+</html>

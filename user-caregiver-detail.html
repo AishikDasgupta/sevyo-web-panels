@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Caregiver Detail — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="user">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content" id="content">
+      <div class="loading-center"><div class="spinner spinner-lg"></div></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('user', 'user-caregiver-detail.html');
+    const id = parseInt(getQueryParam('id') || '1');
+    const cg = CAREGIVERS.find(c => c.id === id) || CAREGIVERS[0];
+    const reviews = REVIEWS.filter(r => r.caregiverId === cg.id);
+
+    document.getElementById('content').innerHTML = `
+      <div class="page-header">
+        <div><h1>${cg.name}</h1><p class="subtitle">${cg.vendor} · <span style="text-transform:capitalize">${cg.type.replace('_',' ')}</span></p></div>
+        <a href="user-booking.html?id=${cg.id}" class="btn btn-primary">Book Now</a>
+      </div>
+
+      <div class="grid" style="grid-template-columns:2fr 1fr;align-items:start">
+        <div class="space-y-4">
+          <div class="card card-pad-lg flex items-start gap-4">
+            ${avatarOrInitial(cg, 80)}
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h2>${cg.name}</h2>
+                ${cg.verified ? '<span class="badge badge-verified">✔ Verified</span>' : ''}
+              </div>
+              ${starsRow(cg.rating)} <span class="text-sm text-muted">${cg.rating} (${cg.reviews} reviews)</span>
+              <p class="text-sm text-muted mt-2">${cg.bio}</p>
+            </div>
+          </div>
+
+          <div class="card card-pad-lg">
+            <h3 class="mb-3">Specializations</h3>
+            <div class="flex flex-wrap gap-2">
+              ${cg.specializations.map(s => `<span class="badge badge-confirmed">${s}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="card card-pad-lg">
+            <h3 class="mb-3">Patient Reviews</h3>
+            ${reviews.length ? reviews.map(r => `
+              <div class="pb-4 mb-4 border-b" style="border-color:var(--border)">
+                ${starsRow(r.rating)}
+                <p class="text-sm text-muted mt-2">${r.comment}</p>
+                <p class="text-xs text-muted mt-2">— ${r.userName} · ${r.date}</p>
+              </div>
+            `).join('') : '<p class="text-muted text-sm">No reviews yet.</p>'}
+          </div>
+        </div>
+
+        <div class="card card-pad-lg" style="position:sticky;top:1rem">
+          <h3 class="mb-4">Booking Summary</h3>
+          <div class="space-y-3 mb-4">
+            <div class="flex justify-between"><span class="text-sm text-muted">Experience</span><span class="text-sm font-semibold">${cg.experience} years</span></div>
+            <div class="flex justify-between"><span class="text-sm text-muted">Rate</span><span class="text-sm font-semibold">${fmtINR(cg.price)}/hr</span></div>
+            <div class="flex justify-between"><span class="text-sm text-muted">Availability</span><span class="badge ${cg.available ? 'badge-active' : 'badge-inactive'}">${cg.available ? 'Available' : 'Busy'}</span></div>
+          </div>
+          <a href="user-booking.html?id=${cg.id}" class="btn btn-primary btn-block btn-lg" ${!cg.available ? 'style="opacity:.5;pointer-events:none"' : ''}>Book ${cg.name.split(' ')[0]}</a>
+        </div>
+      </div>
+    `;
+  </script>
+</body>
+</html>

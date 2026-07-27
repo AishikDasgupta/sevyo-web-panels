@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Patient Home — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="user">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <!-- Hero banner -->
+      <div class="user-hero mb-8">
+        <div class="user-hero-content">
+          <h2 class="user-hero-title">Professional Care at Home</h2>
+          <p class="user-hero-subtitle">Book trusted nurses and caregivers in minutes</p>
+          <div class="user-hero-search">
+            <input class="input user-hero-input" id="heroSearch" placeholder="🔍  Search for nurses, caregivers, or services…" onkeydown="if(event.key==='Enter') window.location='user-browse.html?q='+encodeURIComponent(this.value)">
+            <button class="btn btn-primary user-hero-btn" onclick="window.location='user-browse.html?q='+encodeURIComponent(document.getElementById('heroSearch').value)">Search</button>
+          </div>
+          <div class="user-hero-trust">
+            <span>🛡️ Verified professionals</span>
+            <span>⏱️ 30-min response</span>
+            <span>⭐ 4.8 avg rating</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page header -->
+      <div class="page-header" style="margin-bottom:1rem">
+        <div><h1>Hi, John 👋</h1><p class="subtitle">What care do you need today?</p></div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="grid grid-cols-2 mb-8">
+        <div class="card card-pad-lg flex items-center gap-4" style="cursor:pointer" onclick="openInstant()">
+          <div style="width:3rem;height:3rem;border-radius:.75rem;background:hsl(220 72% 41% / .1);display:flex;align-items:center;justify-content:center;font-size:1.5rem">⚡</div>
+          <div><h3>Instant Booking</h3><p class="text-sm text-muted">Get a nurse within 30 mins</p></div>
+        </div>
+        <a href="user-browse.html" class="card card-pad-lg flex items-center gap-4" style="text-decoration:none;color:inherit">
+          <div style="width:3rem;height:3rem;border-radius:.75rem;background:hsl(351 60% 45% / .1);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.5rem">🔍</div>
+          <div><h3>Browse Care</h3><p class="text-sm text-muted">Find nurses & caregivers</p></div>
+        </a>
+      </div>
+
+      <!-- Service categories -->
+      <h3 class="mb-4">Service Categories</h3>
+      <div class="grid grid-cols-4 mb-8" id="catGrid"></div>
+
+      <!-- Active booking alert -->
+      <div class="card card-pad-lg mb-8" style="border-left:4px solid var(--primary)">
+        <div class="flex items-center gap-3">
+          <div style="width:2.5rem;height:2.5rem;border-radius:.625rem;background:hsl(220 72% 41% / .1);color:var(--primary);display:flex;align-items:center;justify-content:center">📅</div>
+          <div style="flex:1"><p style="font-weight:600;font-size:.875rem">Active Booking: Post-surgery care</p><p class="text-xs text-muted">Sarah Johnson · Today 9:00 AM</p></div>
+          <a href="user-bookings.html" class="btn btn-sm btn-outline">Track</a>
+        </div>
+      </div>
+
+      <!-- Recent bookings -->
+      <h3 class="mb-4">Recent Bookings</h3>
+      <div class="space-y-3" id="recentList"></div>
+    </div>
+  </div>
+
+  <!-- Instant booking modal -->
+  <div class="modal-overlay hidden" id="instantModal">
+    <div class="modal">
+      <div class="modal-header"><h3>⚡ Instant Booking</h3><button onclick="closeInstant()" style="font-size:1.25rem">&times;</button></div>
+      <div class="modal-body">
+        <div class="mb-4"><label class="field-label">Service</label>
+          <select class="select" id="iService"><option>IV Cannulation</option><option>IM / SC Injection</option><option>Major Dressing</option><option>Minor Wound Dressing</option><option>Electrolyte IV</option></select>
+        </div>
+        <div class="mb-4"><label class="field-label">Patient Name</label><input class="input" id="iName" value="John Doe"></div>
+        <div class="mb-4"><label class="field-label">Phone</label><input class="input" id="iPhone" value="+91 98765 43210"></div>
+        <div class="mb-4"><label class="field-label">Address</label><input class="input" id="iAddr" value="123 Main St, Mumbai"></div>
+        <div class="mb-4"><label class="field-label">Timing</label>
+          <select class="select" id="iTiming"><option value="now">As soon as possible</option><option value="scheduled">Schedule for later</option></select>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="submitInstant()">Request Now</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('user', 'user-home.html');
+
+    document.getElementById('catGrid').innerHTML = CAREGIVER_TYPES.map(c => `
+      <a href="user-browse.html?type=${c.id}" class="card" style="text-align:center;text-decoration:none;color:inherit">
+        <div style="font-size:2rem;margin-bottom:.5rem">${c.icon}</div>
+        <p style="font-size:.8rem;font-weight:600">${c.label}</p>
+      </a>
+    `).join('');
+
+    const myBookings = BOOKINGS.filter(b => b.userId === CURRENT_USER.id);
+    document.getElementById('recentList').innerHTML = (myBookings.length ? myBookings : BOOKINGS.slice(0,4)).slice(0,4).map(b => `
+      <div class="card flex items-center gap-3" style="padding:1rem 1.25rem">
+        <div style="flex:1"><p style="font-weight:600;font-size:.875rem">${b.service}</p><p class="text-xs text-muted">${b.date} ${b.time} · ${b.caregiverName || 'Assigning…'}</p></div>
+        ${statusBadge(b.status)}
+      </div>
+    `).join('');
+
+    function openInstant() { document.getElementById('instantModal').classList.remove('hidden'); }
+    function closeInstant() { document.getElementById('instantModal').classList.add('hidden'); }
+    function submitInstant() {
+      closeInstant();
+      toast('Broadcast sent to nearby nurses!');
+    }
+  </script>
+</body>
+</html>

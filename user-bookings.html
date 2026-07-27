@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>My Bookings — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="user">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>My Bookings</h1><p class="subtitle">Your booking history and active appointments</p></div>
+      </div>
+
+      <div class="grid grid-cols-4 mb-8" id="bkStats"></div>
+
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterBK('all',this)">All</button>
+        <button class="filter-chip" onclick="filterBK('confirmed',this)">Confirmed</button>
+        <button class="filter-chip" onclick="filterBK('in_progress',this)">In Progress</button>
+        <button class="filter-chip" onclick="filterBK('completed',this)">Completed</button>
+        <button class="filter-chip" onclick="filterBK('broadcast',this)">Broadcast</button>
+        <button class="filter-chip" onclick="filterBK('cancelled',this)">Cancelled</button>
+      </div>
+
+      <div class="space-y-3" id="bkList"></div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('user', 'user-bookings.html');
+    let activeFilter = 'all';
+    const myBookings = BOOKINGS.filter(b => b.userId === CURRENT_USER.id);
+    const bookings = myBookings.length ? myBookings : BOOKINGS;
+
+    const totalSpent = bookings.filter(b => b.paymentStatus === 'paid').reduce((s,b) => s + b.price, 0);
+    document.getElementById('bkStats').innerHTML = [
+      { label: 'Total', value: bookings.length, icon: '📋', color: 'blue' },
+      { label: 'Active', value: bookings.filter(b => ['confirmed','in_progress','broadcast'].includes(b.status)).length, icon: '⚡', color: 'amber' },
+      { label: 'Completed', value: bookings.filter(b => b.status === 'completed').length, icon: '✓', color: 'emerald' },
+      { label: 'Total Spent', value: fmtINR(totalSpent), icon: '💰', color: 'emerald' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    const statusOrder = { broadcast: 0, pending: 1, confirmed: 2, in_progress: 3, completed: 4, cancelled: 5 };
+    function renderList() {
+      let list = activeFilter === 'all' ? bookings : bookings.filter(b => b.status === activeFilter);
+      list = [...list].sort((a,b) => (statusOrder[a.status] || 9) - (statusOrder[b.status] || 9));
+      document.getElementById('bkList').innerHTML = list.length === 0
+        ? `<div class="empty-state"><p class="text-muted">No bookings found.</p><a href="user-browse.html" class="btn btn-primary mt-4">Browse Care</a></div>`
+        : list.map(b => {
+          const progress = b.status === 'completed' ? 100 : b.status === 'in_progress' ? 66 : b.status === 'confirmed' ? 33 : 10;
+          return `
+          <div class="card" style="padding:1.25rem">
+            <div class="flex items-start gap-3 mb-3">
+              <div style="flex:1">
+                <div class="flex items-center gap-2 mb-1"><p style="font-weight:600">${b.service}</p>${statusBadge(b.status)}</div>
+                <p class="text-xs text-muted">${b.date} ${b.time} · ${b.duration}hr${b.caregiverName ? ' · ' + b.caregiverName : ''}</p>
+                <p class="text-xs text-muted mt-1">📍 ${b.address}</p>
+              </div>
+              <div class="text-right"><p style="font-weight:700;color:var(--primary)">${fmtINR(b.price)}</p>${statusBadge(b.paymentStatus)}</div>
+            </div>
+            <div class="progress-track mb-2"><div class="progress-fill" style="width:${progress}%"></div></div>
+            <div class="flex justify-between text-xs text-muted">
+              <span>Booked</span><span>${b.status === 'broadcast' ? 'Finding nurse…' : b.status === 'confirmed' ? 'Confirmed' : b.status === 'in_progress' ? 'In progress' : b.status === 'completed' ? 'Completed' : 'Cancelled'}</span>
+            </div>
+          </div>
+        `;}).join('');
+    }
+    function filterBK(s, btn) { activeFilter = s; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); renderList(); }
+    renderList();
+  </script>
+</body>
+</html>

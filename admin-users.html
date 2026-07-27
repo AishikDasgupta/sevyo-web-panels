@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Admin Users — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="admin">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>Users</h1><p class="subtitle">Registered patients and families</p></div>
+        <button class="btn btn-primary" onclick="toast('Invite user flow')">+ Invite User</button>
+      </div>
+
+      <div class="grid grid-cols-3 mb-8" id="userStats"></div>
+
+      <div class="table-wrap card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Bookings</th><th>Total Spent</th><th>Joined</th><th>Status</th></tr></thead>
+          <tbody id="userRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('admin', 'admin-users.html');
+    const active = USERS.filter(u => u.status === 'active').length;
+    document.getElementById('userStats').innerHTML = [
+      { label: 'Total Users', value: USERS.length, icon: '👥', color: 'blue' },
+      { label: 'Active', value: active, icon: '✓', color: 'emerald' },
+      { label: 'Total Spent', value: fmtINR(USERS.reduce((s,u) => s + u.spent, 0)), icon: '💰', color: 'emerald' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    document.getElementById('userRows').innerHTML = USERS.map(u => `
+      <tr>
+        <td><div class="flex items-center gap-3">${avatarOrInitial(u, 36)}<div><p style="font-weight:600">${u.name}</p></div></div></td>
+        <td class="text-sm">${u.email}</td>
+        <td class="text-sm">${u.phone}</td>
+        <td class="text-sm">${u.bookings}</td>
+        <td class="text-sm font-semibold">${fmtINR(u.spent)}</td>
+        <td class="text-sm">${u.joined}</td>
+        <td>${statusBadge(u.status)}</td>
+      </tr>
+    `).join('');
+  </script>
+</body>
+</html>

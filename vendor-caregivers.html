@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Vendor Caregivers — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="vendor">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>My Caregivers</h1><p class="subtitle">Manage your team of healthcare professionals</p></div>
+        <button class="btn btn-primary" onclick="openModal()">+ Add Caregiver</button>
+      </div>
+
+      <div class="grid grid-cols-4 mb-8" id="cgStats"></div>
+
+      <div class="filter-bar">
+        <button class="filter-chip active" onclick="filterCG('all',this)">All</button>
+        <button class="filter-chip" onclick="filterCG('available',this)">Available</button>
+        <button class="filter-chip" onclick="filterCG('busy',this)">Busy</button>
+        <button class="filter-chip" onclick="filterCG('verified',this)">Verified</button>
+      </div>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))" id="cgGrid"></div>
+    </div>
+  </div>
+
+  <!-- Add Caregiver Modal -->
+  <div class="modal-overlay hidden" id="addModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Caregiver</h3>
+        <button onclick="closeModal()" style="font-size:1.25rem">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-4"><label class="field-label">Full Name</label><input class="input" id="cgName" placeholder="Jane Doe"></div>
+        <div class="mb-4"><label class="field-label">Type</label>
+          <select class="select" id="cgType"><option value="nurse">Nurse</option><option value="caregiver">Caregiver</option><option value="physiotherapist">Physiotherapist</option><option value="elder_care">Elder Care</option><option value="pediatric">Pediatric</option></select>
+        </div>
+        <div class="mb-4"><label class="field-label">Price/hr (₹)</label><input class="input" type="number" id="cgPrice" value="500"></div>
+        <div class="mb-6"><label class="field-label">Specializations (comma separated)</label><input class="input" id="cgSpecs" placeholder="Wound care, IV therapy"></div>
+        <button class="btn btn-primary btn-block" onclick="addCaregiver()">Add Caregiver</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('vendor', 'vendor-caregivers.html');
+    const myCaregivers = CAREGIVERS.filter(c => c.vendorId === CURRENT_VENDOR.id);
+    let activeFilter = 'all';
+
+    document.getElementById('cgStats').innerHTML = [
+      { label: 'Total', value: myCaregivers.length, icon: '👥', color: 'blue' },
+      { label: 'Available', value: myCaregivers.filter(c => c.available).length, icon: '✓', color: 'emerald' },
+      { label: 'Verified', value: myCaregivers.filter(c => c.verified).length, icon: '✔', color: 'amber' },
+      { label: 'Avg Rating', value: (myCaregivers.reduce((s,c) => s + c.rating, 0) / myCaregivers.length).toFixed(1), icon: '⭐', color: 'rose' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    function renderGrid() {
+      let list = myCaregivers;
+      if (activeFilter === 'available') list = list.filter(c => c.available);
+      if (activeFilter === 'busy') list = list.filter(c => !c.available);
+      if (activeFilter === 'verified') list = list.filter(c => c.verified);
+      document.getElementById('cgGrid').innerHTML = list.map(c => `
+        <div class="card">
+          <div class="flex items-center gap-3 mb-3">
+            ${avatarOrInitial(c, 48)}
+            <div style="flex:1"><p style="font-weight:600">${c.name}</p><p class="text-xs text-muted" style="text-transform:capitalize">${c.type.replace('_',' ')}</p></div>
+            <span class="badge ${c.available ? 'badge-active' : 'badge-inactive'}">${c.available ? 'Available' : 'Busy'}</span>
+          </div>
+          <div class="flex items-center justify-between mb-2"><span style="color:#fbbf24">★ ${c.rating} (${c.reviews})</span><span class="text-sm font-semibold">${fmtINR(c.price)}/hr</span></div>
+          <p class="text-xs text-muted mb-3">${c.experience} yrs experience</p>
+          <div class="flex gap-2">
+            <button class="btn btn-sm btn-outline" onclick="toast('Editing ${c.name}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="toast('Removed ${c.name}')">Remove</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    function filterCG(f, btn) { activeFilter = f; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); renderGrid(); }
+    function openModal() { document.getElementById('addModal').classList.remove('hidden'); }
+    function closeModal() { document.getElementById('addModal').classList.add('hidden'); }
+    function addCaregiver() { toast('Caregiver added!'); closeModal(); }
+    renderGrid();
+  </script>
+</body>
+</html>

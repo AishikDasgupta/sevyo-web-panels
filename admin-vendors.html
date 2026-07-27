@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Admin Vendors — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="admin">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>Vendors</h1><p class="subtitle">Manage nursing agencies and partners</p></div>
+        <button class="btn btn-primary" onclick="toast('Invite vendor flow')">+ Invite Vendor</button>
+      </div>
+
+      <div class="grid grid-cols-4 mb-8" id="vendorStats"></div>
+
+      <div class="table-wrap card" style="padding:0;overflow:hidden">
+        <table>
+          <thead><tr><th>Agency</th><th>Location</th><th>Caregivers</th><th>Rating</th><th>Revenue</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="vendorRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('admin', 'admin-vendors.html');
+
+    const active = VENDORS.filter(v => v.status === 'active').length;
+    const pending = VENDORS.filter(v => v.status === 'pending').length;
+    document.getElementById('vendorStats').innerHTML = [
+      { label: 'Total Vendors', value: VENDORS.length, icon: '🏢', color: 'blue' },
+      { label: 'Active', value: active, icon: '✓', color: 'emerald' },
+      { label: 'Pending', value: pending, icon: '⏳', color: 'amber' },
+      { label: 'Total Revenue', value: fmtINR(VENDORS.reduce((s,v) => s + v.revenue, 0)), icon: '💰', color: 'emerald' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    document.getElementById('vendorRows').innerHTML = VENDORS.map(v => `
+      <tr>
+        <td><div class="flex items-center gap-3"><span style="font-size:1.5rem">${v.logo}</span><div><p style="font-weight:600">${v.name}</p><p class="text-xs text-muted">${v.contact}</p></div></div></td>
+        <td class="text-sm">${v.location}</td>
+        <td class="text-sm">${v.caregivers}</td>
+        <td><span style="color:#fbbf24">★</span> ${v.rating}</td>
+        <td class="text-sm font-semibold">${fmtINR(v.revenue)}</td>
+        <td>${v.status === 'active' ? statusBadge('active') : statusBadge('pending_v')}</td>
+        <td>
+          ${v.status === 'pending'
+            ? `<button class="btn btn-sm btn-primary" onclick="approveVendor(${v.id})">Approve</button>`
+            : `<button class="btn btn-sm btn-outline" onclick="toast('Viewing ${v.name}')">View</button>`}
+        </td>
+      </tr>
+    `).join('');
+
+    function approveVendor(id) {
+      toast('Vendor approved!');
+      // visual only
+    }
+  </script>
+</body>
+</html>

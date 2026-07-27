@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport"
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <title>Vendor Dashboard — Sevyo</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="panel-wrap" data-panel="vendor">
+  <div class="main-area" id="mainArea">
+    <div class="panel-content">
+      <div class="page-header">
+        <div><h1>Vendor Dashboard</h1><p class="subtitle" id="agencyName">HealthFirst Agency</p></div>
+        <a href="vendor-bookings.html" class="btn btn-primary">View Bookings</a>
+      </div>
+
+      <div class="grid grid-cols-4 mb-8" id="vendorKpis"></div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Recent Bookings</h3>
+          <div class="space-y-3" id="recentBookings"></div>
+        </div>
+        <div class="card card-pad-lg">
+          <h3 class="mb-4">Your Caregivers</h3>
+          <div class="space-y-3" id="myCaregivers"></div>
+          <a href="vendor-caregivers.html" class="btn btn-outline btn-block mt-4">Manage Caregivers</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script><script src="js/app.js"></script>
+  <script>
+    initPanel('vendor', 'vendor-dashboard.html');
+    const vendor = CURRENT_VENDOR;
+    document.getElementById('agencyName').textContent = vendor.name;
+    const myCaregivers = CAREGIVERS.filter(c => c.vendorId === vendor.id);
+    const myBookings = BOOKINGS.filter(b => b.vendorId === vendor.id);
+    const revenue = myBookings.filter(b => b.paymentStatus === 'paid').reduce((s,b) => s + b.price, 0);
+
+    document.getElementById('vendorKpis').innerHTML = [
+      { label: 'Active Bookings', value: myBookings.filter(b => ['confirmed','in_progress','pending'].includes(b.status)).length, icon: '📅', color: 'blue' },
+      { label: 'Caregivers', value: myCaregivers.length, icon: '🩺', color: 'emerald' },
+      { label: 'Revenue', value: fmtINR(revenue), icon: '💰', color: 'amber' },
+      { label: 'Rating', value: '★ ' + vendor.rating, icon: '⭐', color: 'rose' },
+    ].map(k => `<div class="stat-card"><div><p class="stat-label">${k.label}</p><p class="stat-value">${k.value}</p></div><div class="stat-icon ${k.color}" style="font-size:1.25rem">${k.icon}</div></div>`).join('');
+
+    document.getElementById('recentBookings').innerHTML = (myBookings.length ? myBookings : BOOKINGS.slice(0,4)).slice(0,5).map(b => `
+      <div class="flex items-center gap-3 pb-4 border-b" style="border-color:var(--border)">
+        <div style="flex:1"><p style="font-size:.875rem;font-weight:600">${b.service}</p><p class="text-xs text-muted">${b.userName} · ${b.date}</p></div>
+        ${statusBadge(b.status)}
+      </div>
+    `).join('');
+
+    document.getElementById('myCaregivers').innerHTML = myCaregivers.map(c => `
+      <div class="flex items-center gap-3 pb-4 border-b" style="border-color:var(--border)">
+        ${avatarOrInitial(c, 36)}
+        <div style="flex:1"><p style="font-size:.875rem;font-weight:600">${c.name}</p><p class="text-xs text-muted">${c.available ? 'Available' : 'Busy'}</p></div>
+        <span style="color:#fbbf24">★ ${c.rating}</span>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>
