@@ -2,6 +2,27 @@
 
 const LOGO_URL = "https://media.base44.com/images/public/69c7d609f4ca115f68471b64/e2d818e6a_Web_Photo_Editor_1-removebg-preview.png";
 
+/* TODO: replace with the real Sevyo contact number */
+const CONTACT_PHONE = '+919876543210';
+const WHATSAPP_NUMBER = '919876543210';
+/* TODO: replace with Sevyo's own mental health promotional video */
+const MENTAL_HEALTH_VIDEO_URL = 'https://www.youtube.com/embed/KSKupsrgdsI';
+
+const FAMILY_CONTACTS = [
+  { name: 'Spouse', phone: '+91 98111 22334' },
+  { name: 'Son / Daughter', phone: '+91 99000 55667' },
+  { name: 'Sibling', phone: '+91 91234 56789' },
+];
+
+const LANDING_SERVICES = [
+  { icon: '🤲', label: 'Attendants', desc: 'Personal care attendants for daily assistance', site: false },
+  { icon: '🏥', label: 'Nurses', desc: 'Licensed registered nurses for medical care', site: false },
+  { icon: '💪', label: 'Physiotherapists', desc: 'Physical therapy and rehabilitation', site: true },
+  { icon: '🧠', label: 'Mental Health', desc: 'Emotional and psychological support', site: true },
+  { icon: '🧪', label: 'Labs', desc: 'Lab tests and home sample collection', site: true },
+  { icon: '🛠️', label: 'Equipment Providers', desc: 'Medical equipment supply and support', site: true },
+];
+
 const CAREGIVER_TYPES = [
   { id: 'nurse', label: 'Registered Nurse', icon: '🏥', desc: 'Licensed nurses for medical care' },
   { id: 'caregiver', label: 'Personal Caregiver', icon: '🤲', desc: 'Daily assistance and companionship' },

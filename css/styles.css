@@ -297,6 +297,7 @@ tr:hover td { background: var(--muted); }
 
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+.modal-overlay.hidden { display: none; }
 .modal { background: var(--card); border-radius: 1rem; max-width: 32rem; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
 .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); }
 .modal-body { padding: 1.5rem; }
@@ -350,6 +351,31 @@ tr:hover td { background: var(--muted); }
 /* Toast */
 #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100; display: flex; flex-direction: column; gap: .5rem; }
 .toast-item { background: var(--fg); color: var(--bg); padding: .75rem 1.25rem; border-radius: .75rem; font-size: .85rem; font-weight: 500; box-shadow: var(--shadow-lg); animation: fadeUp .3s ease; }
+
+/* ===== Floating call / WhatsApp widgets ===== */
+.support-widgets { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 55; display: flex; flex-direction: column; gap: .75rem; }
+.float-btn { width: 3.25rem; height: 3.25rem; border-radius: 999px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); color: #fff; transition: transform .2s; }
+.float-btn:hover { transform: translateY(-2px) scale(1.05); }
+.float-btn svg { width: 1.5rem; height: 1.5rem; }
+.float-wa { background: #25d366; }
+.float-call { background: var(--primary); }
+
+/* SOS floating button + pulse */
+.sos-float { position: fixed; left: 1.25rem; bottom: 1.25rem; z-index: 55; width: 4rem; height: 4rem; border-radius: 999px; background: linear-gradient(135deg, #e11d48, #be123c); color: #fff; font-weight: 800; font-size: .875rem; letter-spacing: .08em; box-shadow: 0 8px 24px rgba(225,29,72,.4); transition: transform .2s; animation: sosPulse 2s infinite; }
+.sos-float:hover { transform: scale(1.06); }
+@keyframes sosPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(225,29,72,.45); } 50% { box-shadow: 0 0 0 14px rgba(225,29,72,0); } }
+
+/* ===== Landing care services ===== */
+.care-service { display: flex; flex-direction: column; gap: .75rem; padding: 1.5rem; border-radius: 1rem; border: 1px solid #f1f5f9; background: hsl(210 40% 98% / .6); text-decoration: none; color: inherit; transition: all .2s; }
+.care-service:hover { box-shadow: var(--shadow); border-color: hsl(220 72% 41% / .2); background: #fff; transform: translateY(-2px); }
+.care-service .cs-icon { width: 3rem; height: 3rem; border-radius: .875rem; background: hsl(220 72% 41% / .1); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+.care-service .cs-label { font-weight: 700; font-size: .95rem; color: var(--fg); }
+.care-service .cs-desc { font-size: .8rem; color: #64748b; line-height: 1.5; flex: 1; }
+.care-service .cs-loc { font-size: .7rem; font-weight: 600; color: var(--primary); background: hsl(220 72% 41% / .08); border-radius: 999px; padding: .25rem .75rem; align-self: flex-start; }
+
+/* ===== Promo video ===== */
+.video-wrap { position: relative; border-radius: 1.5rem; overflow: hidden; box-shadow: var(--shadow-lg); aspect-ratio: 16/9; background: #0f172a; }
+.video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 
 /* Star rating row */
 .stars-row { display: flex; gap: 2px; }

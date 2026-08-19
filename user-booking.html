@@ -18,6 +18,8 @@
     initPanel('user', 'user-booking.html');
     const id = parseInt(getQueryParam('id') || '1');
     const cg = CAREGIVERS.find(c => c.id === id) || CAREGIVERS[0];
+    const hasLocation = ['physiotherapist', 'lab', 'mental_health', 'equipment'].includes(cg.type);
+    let visitLoc = 'home';
     let step = 1;
 
     document.getElementById('content').innerHTML = `
@@ -55,6 +57,14 @@
               <div><label class="field-label">Time</label><input class="input" type="time" id="bTime" value="09:00"></div>
             </div>
             <div><label class="field-label">Duration (hours)</label><input class="input" type="number" id="bDur" value="2" min="1"></div>
+            ${hasLocation ? `
+            <div>
+              <label class="field-label">Visit Location</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 p-3 rounded-xl border" style="border-color:var(--border);cursor:pointer"><input type="radio" name="visitLoc" value="home" checked onchange="visitLoc=this.value"> 🏠 At Home</label>
+                <label class="flex items-center gap-2 p-3 rounded-xl border" style="border-color:var(--border);cursor:pointer"><input type="radio" name="visitLoc" value="site" onchange="visitLoc=this.value"> 🏢 At Site</label>
+              </div>
+            </div>` : ''}
             <div><label class="field-label">Notes</label><textarea class="textarea" id="bNotes" placeholder="Any special requirements…"></textarea></div>
           </div>
           <button class="btn btn-primary btn-block btn-lg mt-4" onclick="next()">Continue</button>
@@ -103,6 +113,7 @@
             <div class="text-left space-y-2 mb-6" style="max-width:20rem;margin:0 auto">
               <div class="flex justify-between"><span class="text-sm text-muted">Caregiver</span><span class="text-sm font-semibold">${cg.name}</span></div>
               <div class="flex justify-between"><span class="text-sm text-muted">Service</span><span class="text-sm font-semibold">Home care</span></div>
+              ${hasLocation ? `<div class="flex justify-between"><span class="text-sm text-muted">Visit Type</span><span class="text-sm font-semibold">${visitLoc === 'site' ? 'At Site' : 'At Home'}</span></div>` : ''}
               <div class="flex justify-between"><span class="text-sm text-muted">Date</span><span class="text-sm font-semibold">25 Jul, 9:00 AM</span></div>
               <div class="flex justify-between"><span class="text-sm text-muted">Total</span><span class="text-sm font-semibold">${fmtINR(total)}</span></div>
             </div>

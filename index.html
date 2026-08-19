@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png"> content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/5ccb8b120_logo.png">
   <title>Sevyo — Professional Care at Home</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -14,6 +14,7 @@
       <img src="https://media.base44.com/images/public/69c7d609f4ca115f68471b64/e2d818e6a_Web_Photo_Editor_1-removebg-preview.png" alt="Sevyo" class="logo">
       <div class="nav-links">
         <a href="#services">Services</a>
+        <a href="about.html">About</a>
         <a href="#process">Process</a>
         <a href="#testimonials">Testimonials</a>
         <a href="#faq">FAQ</a>
@@ -70,6 +71,34 @@
       </div>
     </section>
 
+    <!-- CARE SERVICES -->
+    <section id="care-services" style="padding:6rem 1.5rem;background:linear-gradient(to bottom,hsl(220 72% 41% / .04),var(--bg))">
+      <div class="max-w-7xl px-6">
+        <div class="fade-section text-center mb-8">
+          <span class="pill-badge">Care Services</span>
+          <h2 style="font-size:2.25rem;margin-top:.75rem">Professional Care, Your Way</h2>
+          <p class="text-muted" style="max-width:36rem;margin:.75rem auto 0">From daily attendants to physiotherapy and labs — choose where you want the care delivered.</p>
+        </div>
+        <div class="fade-section" style="animation-delay:.1s">
+          <div class="grid grid-cols-3" id="careServiceGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MENTAL HEALTH PROMO -->
+    <section id="mental-health" style="padding:6rem 1.5rem;background:#fff">
+      <div class="max-w-5xl px-6">
+        <div class="fade-section text-center mb-8">
+          <span class="pill-badge" style="background:hsl(351 60% 45% / .1);color:var(--accent)">Mental Health</span>
+          <h2 style="font-size:2.25rem;margin-top:.75rem">You Are Not Alone</h2>
+          <p class="text-muted" style="max-width:36rem;margin:.75rem auto 0">Professional, judgement-free emotional and psychological support — at home or at site.</p>
+        </div>
+        <div class="fade-section" style="animation-delay:.1s">
+          <div class="video-wrap" id="mhVideoWrap"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- HOW IT WORKS -->
     <section id="process" style="padding:6rem 1.5rem;background:linear-gradient(to bottom,hsl(220 72% 41% / .04),var(--bg))">
       <div class="max-w-5xl px-6">
@@ -122,7 +151,6 @@
               <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:1.5rem;color:rgba(255,255,255,.7);font-size:.875rem;margin-top:1rem">
                 <span>✓ No waiting rooms</span>
                 <span>✓ Certified professionals</span>
-                <span>✓ Available 24/7</span>
               </div>
             </div>
           </div>
@@ -139,6 +167,7 @@
         <p style="font-size:.75rem;color:#94a3b8">© 2026 Sevyo Health. Professional Care at Home.</p>
       </div>
       <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem">
+        <a href="about.html" style="color:#94a3b8;font-size:.875rem">About</a>
         <a href="#" style="color:#94a3b8;font-size:.875rem">Privacy Policy</a>
         <a href="#" style="color:#94a3b8;font-size:.875rem">Terms of Service</a>
         <a href="#" style="color:#94a3b8;font-size:.875rem">Contact Us</a>
@@ -160,6 +189,23 @@
         <span class="tile-label">${s.label}</span>
       </a>
     `).join('');
+
+    // Care services (attendants, nurses, physiotherapists, mental health, equipment, labs)
+    document.getElementById('careServiceGrid').innerHTML = LANDING_SERVICES.map(s => `
+      <a href="auth.html?mode=signup" class="care-service">
+        <div class="cs-icon">${s.icon}</div>
+        <div>
+          <p class="cs-label">${s.label}</p>
+          <p class="cs-desc">${s.desc}</p>
+        </div>
+        <span class="cs-loc">${s.site ? '🏠 At Home · 🏢 At Site' : '🏠 At Home'}</span>
+      </a>
+    `).join('');
+
+    // Mental health promotional video
+    document.getElementById('mhVideoWrap').innerHTML = `
+      <iframe src="${MENTAL_HEALTH_VIDEO_URL}" title="Mental health promotional video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    `;
 
     // Steps
     document.getElementById('stepsGrid').innerHTML = STEPS.map((s, i) => `
