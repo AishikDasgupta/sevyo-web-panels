@@ -56,7 +56,7 @@
         <form id="authForm" onsubmit="handleAuth(event)">
           <div id="nameField" class="hidden mb-4">
             <label class="field-label">Full Name</label>
-            <input class="input" type="text" placeholder="John Doe" required>
+            <input class="input" type="text" id="nameInput" placeholder="John Doe">
           </div>
           <div class="mb-4">
             <label class="field-label">Email</label>
@@ -93,6 +93,7 @@
       document.getElementById('tabSignin').classList.toggle('active', !isSignup);
       document.getElementById('tabSignup').classList.toggle('active', isSignup);
       document.getElementById('nameField').classList.toggle('hidden', !isSignup);
+      document.getElementById('nameInput').required = isSignup;
       document.getElementById('roleSelector').classList.toggle('hidden', !isSignup);
       document.getElementById('submitBtn').textContent = isSignup ? 'Create Account' : 'Sign In';
       document.getElementById('toggleText').textContent = isSignup ? 'Already have an account?' : 'New to Sevyo?';
