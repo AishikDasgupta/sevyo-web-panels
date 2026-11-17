@@ -68,7 +68,10 @@ Demo logins (password `sevyo123`): `john@example.com` (user),
 
 ## Remaining (optional / future work)
 
-1. Click-through all portals against the live app (build + tests are green).
+1. Click-through portals done via API smoke tests (login, services, booking, payment
+   order/verify incl. signature tampering — all green, 14/14 unit tests). Web pages render
+   with the new floaters/404/error states. Remaining: real Razorpay credentials (current
+   test keys are rejected by Razorpay with "Authentication failed") and portal click-through.
 2. Payment is integrated via Razorpay (test keys supported): booking with
    paymentMethod=online opens Razorpay checkout; `POST /api/payments/razorpay/order`
    creates/reuses the order (stored on `bookings.razorpay_order_id`) and

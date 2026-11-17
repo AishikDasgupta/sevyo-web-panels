@@ -7,16 +7,17 @@ import {
   createBookingSchema,
   listBookingsQuery,
 } from '../schemas/booking.schema';
+import { asyncHandler } from '../lib/async-handler';
 
 const router = Router();
 
-router.get('/', requireAuth, validateQuery(listBookingsQuery), list);
-router.post('/', requireAuth, requireRole('user'), validateBody(createBookingSchema), create);
+router.get('/', requireAuth, validateQuery(listBookingsQuery), asyncHandler(list));
+router.post('/', requireAuth, requireRole('user'), validateBody(createBookingSchema), asyncHandler(create));
 router.patch(
   '/:id/status',
   requireAuth,
   validateBody(bookingTransitionSchema),
-  transition,
+  asyncHandler(transition),
 );
 
 export default router;

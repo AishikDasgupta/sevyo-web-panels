@@ -7,13 +7,14 @@ import {
   updateOne,
 } from '../controllers/caregiver.controller';
 import { requireAuth, requireRole } from '../middleware/require-auth';
+import { asyncHandler } from '../lib/async-handler';
 
 const router = Router();
 
-router.get('/', requireAuth, list);
-router.get('/me', requireAuth, requireRole('resource'), me);
-router.get('/:id', requireAuth, getOne);
-router.post('/', requireAuth, requireRole('vendor'), createForVendor);
-router.patch('/:id', requireAuth, updateOne);
+router.get('/', requireAuth, asyncHandler(list));
+router.get('/me', requireAuth, requireRole('resource'), asyncHandler(me));
+router.get('/:id', requireAuth, asyncHandler(getOne));
+router.post('/', requireAuth, requireRole('vendor'), asyncHandler(createForVendor));
+router.patch('/:id', requireAuth, asyncHandler(updateOne));
 
 export default router;

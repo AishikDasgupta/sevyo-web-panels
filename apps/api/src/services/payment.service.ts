@@ -78,9 +78,6 @@ export async function verifyRazorpayPayment(
 ) {
   const booking = await loadBookingForPayment(input.bookingId, requester);
 
-  if (booking.paymentStatus === 'paid') {
-    return serializeBooking(booking);
-  }
   if (!booking.razorpayOrderId || booking.razorpayOrderId !== input.razorpayOrderId) {
     throw badRequest('Payment order does not match this booking');
   }
@@ -89,6 +86,10 @@ export async function verifyRazorpayPayment(
   }
   if (!verifyPaymentSignature(input.razorpayOrderId, input.razorpayPaymentId, input.razorpaySignature)) {
     throw unprocessable('Invalid payment signature — payment not accepted');
+  }
+  if (booking.paymentStatus === 'paid') {
+    // Idempotent re-verify: same payment confirmed again — no state change
+    return serializeBooking(booking);
   }
 
   const updated = await prisma.booking.update({

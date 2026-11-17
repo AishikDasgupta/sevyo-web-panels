@@ -4,6 +4,7 @@ import { register, login, refresh, logout } from '../controllers/auth.controller
 import { requireAuth } from '../middleware/require-auth';
 import { validateBody } from '../middleware/validate';
 import { loginSchema, registerSchema } from '../schemas/auth.schema';
+import { asyncHandler } from '../lib/async-handler';
 
 const router = Router();
 
@@ -16,9 +17,9 @@ const authLimiter = rateLimit({
   message: { error: { message: 'Too many attempts — try again later', code: 'RATE_LIMITED' } },
 });
 
-router.post('/register', authLimiter, validateBody(registerSchema), register);
-router.post('/login', authLimiter, validateBody(loginSchema), login);
-router.post('/refresh', refresh);
-router.post('/logout', requireAuth, logout);
+router.post('/register', authLimiter, validateBody(registerSchema), asyncHandler(register));
+router.post('/login', authLimiter, validateBody(loginSchema), asyncHandler(login));
+router.post('/refresh', asyncHandler(refresh));
+router.post('/logout', requireAuth, asyncHandler(logout));
 
 export default router;

@@ -3,12 +3,13 @@ import { createMine, myVendor, updateOne } from '../controllers/vendor.controlle
 import { requireAuth, requireRole } from '../middleware/require-auth';
 import { validateBody } from '../middleware/validate';
 import { upsertVendorSchema } from '../schemas/vendor.schema';
+import { asyncHandler } from '../lib/async-handler';
 
 const router = Router();
 
 router.use(requireRole('vendor'));
-router.get('/me', myVendor);
-router.post('/', requireAuth, requireRole('vendor'), validateBody(upsertVendorSchema), createMine);
-router.patch('/:id', validateBody(upsertVendorSchema.partial()), updateOne);
+router.get('/me', asyncHandler(myVendor));
+router.post('/', requireAuth, requireRole('vendor'), validateBody(upsertVendorSchema), asyncHandler(createMine));
+router.patch('/:id', validateBody(upsertVendorSchema.partial()), asyncHandler(updateOne));
 
 export default router;
