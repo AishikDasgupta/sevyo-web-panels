@@ -13,6 +13,8 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset --force",
+    "smoke": "node scripts/smoke-e2e.mjs",
     "db:local": "node scripts/dev-local-db.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio"

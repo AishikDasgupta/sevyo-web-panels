@@ -30,6 +30,7 @@ model User {
   reviews        Review[]
   familyContacts FamilyContact[]
   refreshTokens  RefreshToken[]
+  notifications  Notification[]
 
   @@index([role])
   @@map("users")
@@ -171,6 +172,22 @@ model Review {
   vendor    Vendor?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
 
   @@map("reviews")
+}
+
+model Notification {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    BigInt   @db.UnsignedBigInt
+  title     String   @db.VarChar(200)
+  body      String?  @db.VarChar(500)
+  link      String?  @db.VarChar(255)
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
 
 // ===== 4.9 family_contacts ===== */

@@ -195,6 +195,19 @@ export interface AdminStats {
         color: string;
     }[];
 }
+export interface AppNotification {
+    id: string;
+    userId: string;
+    title: string;
+    body: string | null;
+    link: string | null;
+    read: boolean;
+    createdAt: string;
+}
+export interface NotificationsResponse {
+    notifications: AppNotification[];
+    unreadCount: number;
+}
 export interface RazorpayOrderResponse {
     orderId: string;
     /** Amount in paise (INR × 100). */

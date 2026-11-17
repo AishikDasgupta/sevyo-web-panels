@@ -5,6 +5,7 @@ import { DEFAULT_INSTANT_PRICE, TRANSITIONS } from '../src/services/booking.serv
 describe('booking state machine', () => {
   it('allows the documented happy path', () => {
     expect(TRANSITIONS.pending).toContain('broadcast');
+    expect(TRANSITIONS.pending).toContain('confirmed');
     expect(TRANSITIONS.broadcast).toContain('confirmed');
     expect(TRANSITIONS.confirmed).toContain('in_progress');
     expect(TRANSITIONS.in_progress).toContain('completed');

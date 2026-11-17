@@ -6,7 +6,7 @@ import {
   users,
   vendors,
 } from '../controllers/admin.controller';
-import { requireRole } from '../middleware/require-auth';
+import { requireAuth, requireRole } from '../middleware/require-auth';
 import { z } from 'zod';
 import { USER_STATUSES, VENDOR_STATUSES } from '@sevyo/shared-types';
 import { validateBody } from '../middleware/validate';
@@ -14,7 +14,7 @@ import { asyncHandler } from '../lib/async-handler';
 
 const router = Router();
 
-router.use(requireRole('admin'));
+router.use(requireAuth, requireRole('admin'));
 
 const userStatusSchema = z.object({ status: z.enum(USER_STATUSES) });
 const vendorStatusSchema = z.object({ status: z.enum(VENDOR_STATUSES) });

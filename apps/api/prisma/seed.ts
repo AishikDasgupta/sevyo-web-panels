@@ -63,6 +63,7 @@ const SPECIALIZATIONS = [
   'Chronic illness',
   'Bathing assistance',
   'Light housekeeping',
+  'Lab sample collection',
 ];
 
 interface SeedUser {
@@ -80,6 +81,8 @@ const USERS: SeedUser[] = [
   { name: 'Robert Brown', email: 'robert@example.com', phone: '+91 99000 55667', role: 'user', defaultAddress: '789 Pine Rd, Delhi' },
   { name: 'Alice Green', email: 'alice@example.com', phone: '+91 91234 56789', role: 'user', defaultAddress: '321 Elm St, Mumbai' },
   { name: 'Tom White', email: 'tom@example.com', phone: '+91 94560 77881', role: 'user', status: 'inactive' },
+  { name: 'Neha Gupta', email: 'neha@example.com', phone: '+91 98877 66554', role: 'user', defaultAddress: '12 MG Road, Pune' },
+  { name: 'Sanjay Kapoor', email: 'sanjay@example.com', phone: '+91 97766 55443', role: 'user', defaultAddress: '88 Park Street, Kolkata' },
   // Vendors (agency owners)
   { name: 'Amit Shah', email: 'admin@healthfirst.com', phone: '+91 98765 43210', role: 'vendor' },
   { name: 'Neha Kapoor', email: 'info@carewell.com', phone: '+91 98111 22334', role: 'vendor' },
@@ -94,6 +97,8 @@ const USERS: SeedUser[] = [
   { name: 'James Wilson', email: 'james@sevyo.co.in', phone: '+91 90000 00006', role: 'resource' },
   { name: 'Anna Martinez', email: 'anna@sevyo.co.in', phone: '+91 90000 00007', role: 'resource' },
   { name: 'Robert Taylor', email: 'robert.t@sevyo.co.in', phone: '+91 90000 00008', role: 'resource' },
+  { name: 'Priya Nair', email: 'priya@sevyo.co.in', phone: '+91 90000 00009', role: 'resource' },
+  { name: 'Rohit Sharma', email: 'rohit@sevyo.co.in', phone: '+91 90000 00010', role: 'resource' },
   // Admin
   { name: 'Sevyo Admin', email: 'admin@sevyo.co.in', phone: '+91 90000 00000', role: 'admin' },
 ];
@@ -108,12 +113,14 @@ const VENDOR_SEED = [
 const CAREGIVER_SEED = [
   { name: 'Sarah Johnson', type: 'nurse' as const, price: 550, experience: 8, available: true, verified: true, specs: ['Post-surgery care', 'Wound management', 'IV therapy'], bio: 'Dedicated RN with 8 years of home healthcare experience. Specialized in post-operative and chronic care.' },
   { name: 'Michael Chen', type: 'physiotherapist' as const, price: 650, experience: 6, available: true, verified: true, specs: ['Sports rehab', 'Geriatric therapy', 'Pain management'], bio: 'Sports rehabilitation expert helping patients recover mobility and strength.' },
-  { name: 'Emily Rodriguez', type: 'caregiver' as const, price: 350, experience: 10, available: false, verified: true, specs: ['Dementia care', 'Companionship', 'Meal preparation'], bio: 'Compassionate caregiver specializing in dementia and Alzheimer care.' },
+  { name: 'Emily Rodriguez', type: 'caregiver' as const, price: 350, experience: 10, available: true, verified: true, specs: ['Dementia care', 'Companionship', 'Meal preparation'], bio: 'Compassionate caregiver specializing in dementia and Alzheimer care.' },
   { name: 'David Kim', type: 'elder_care' as const, price: 450, experience: 12, available: true, verified: true, specs: ['Fall prevention', 'Medication management', 'Mobility assistance'], bio: 'Veteran elder care specialist ensuring dignity and comfort for seniors.' },
   { name: 'Lisa Patel', type: 'pediatric' as const, price: 600, experience: 7, available: true, verified: true, specs: ['Newborn care', 'Vaccination support', 'Child development'], bio: 'Pediatric nurse passionate about children health and well-being.' },
   { name: 'James Wilson', type: 'mental_health' as const, price: 500, experience: 5, available: true, verified: false, specs: ['Anxiety support', 'Depression care', 'CBT techniques'], bio: 'Mental health aide providing compassionate emotional and psychological support.' },
   { name: 'Anna Martinez', type: 'nurse' as const, price: 600, experience: 11, available: true, verified: true, specs: ['Diabetic care', 'BP monitoring', 'Chronic illness'], bio: 'Experienced RN with focus on chronic disease management and patient education.' },
   { name: 'Robert Taylor', type: 'caregiver' as const, price: 300, experience: 4, available: true, verified: false, specs: ['Mobility assistance', 'Bathing assistance', 'Light housekeeping'], bio: 'Reliable caregiver providing daily living assistance with a warm approach.' },
+  { name: 'Priya Nair', type: 'lab' as const, price: 400, experience: 5, available: true, verified: true, specs: ['Lab sample collection'], bio: 'Certified lab technician — home blood and urine sample collection with doorstep reporting.' },
+  { name: 'Rohit Sharma', type: 'lab' as const, price: 450, experience: 7, available: true, verified: true, specs: ['Lab sample collection'], bio: 'Senior phlebotomist — 10,000+ home collections with same-day digital reports.' },
 ];
 
 const FAMILY_CONTACTS = [
@@ -193,7 +200,7 @@ async function main() {
   for (let i = 0; i < CAREGIVER_SEED.length; i++) {
     const c = CAREGIVER_SEED[i];
     const userId = userRows[caregiverUserEmails[i]].id;
-    const vendorId = i % 3 === 2 ? null : vendorRows[i % 3]; // some independents
+    const vendorId = i === 2 ? vendorRows[3] : i === 5 ? vendorRows[2] : i % 3 === 2 ? null : vendorRows[i % 3]; // Emily -> NurseOnCall (pending); James -> SeniorCare; some independents
 
     const caregiver = await prisma.caregiver.upsert({
       where: { userId },
@@ -205,8 +212,8 @@ async function main() {
         pricePerHour: c.price,
         bio: c.bio,
         experienceYears: c.experience,
-        rating: [4.9, 4.8, 4.7, 4.9, 4.8, 4.6, 4.9, 4.5][i],
-        reviewsCount: [127, 89, 203, 156, 94, 67, 178, 112][i],
+        rating: [4.9, 4.8, 4.7, 4.9, 4.8, 4.6, 4.9, 4.5, 4.7, 4.8][i],
+        reviewsCount: [127, 89, 203, 156, 94, 67, 178, 112, 143, 168][i],
         available: c.available,
         verified: c.verified,
       },

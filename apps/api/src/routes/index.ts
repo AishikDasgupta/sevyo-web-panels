@@ -10,6 +10,7 @@ import familyContactRoutes from './family-contact.routes';
 import uploadRoutes from './upload.routes';
 import adminRoutes from './admin.routes';
 import paymentRoutes from './payment.routes';
+import notificationRoutes from './notification.routes';
 import { requireAuth } from '../middleware/require-auth';
 
 export const apiRouter = Router();
@@ -28,3 +29,4 @@ apiRouter.use('/family-contacts', familyContactRoutes);
 apiRouter.use('/uploads', uploadRoutes);
 apiRouter.use('/admin', adminRoutes);
 apiRouter.use('/payments', paymentRoutes);
+apiRouter.use('/notifications', notificationRoutes);

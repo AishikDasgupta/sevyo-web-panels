@@ -7,9 +7,9 @@ import { asyncHandler } from '../lib/async-handler';
 
 const router = Router();
 
-router.use(requireRole('vendor'));
+router.use(requireAuth, requireRole('vendor'));
 router.get('/me', asyncHandler(myVendor));
-router.post('/', requireAuth, requireRole('vendor'), validateBody(upsertVendorSchema), asyncHandler(createMine));
+router.post('/', validateBody(upsertVendorSchema), asyncHandler(createMine));
 router.patch('/:id', validateBody(upsertVendorSchema.partial()), asyncHandler(updateOne));
 
 export default router;

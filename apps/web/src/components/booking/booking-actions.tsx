@@ -49,11 +49,11 @@ export function BookingActions({
   });
 
   const mutation = useMutation({
-    mutationFn: ({ status, caregiverId: cgId }: { status: BookingStatus; caregiverId?: string | null }) =>
-      api.patch<Booking>(`/bookings/${booking.id}/status`, {
-        status,
-        caregiverId: cgId && cgId !== 'none' ? Number(cgId) : null,
-      }),
+    mutationFn: ({ status, caregiverId: cgId }: { status: BookingStatus; caregiverId?: string | null }) => {
+      const body: { status: BookingStatus; caregiverId?: number } = { status };
+      if (cgId && cgId !== 'none') body.caregiverId = Number(cgId);
+      return api.patch<Booking>(`/bookings/${booking.id}/status`, body);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
       toast.success('Booking updated');
@@ -83,6 +83,12 @@ export function BookingActions({
   }
 
   if (role === 'resource') {
+    if (booking.status === 'pending')
+      return (
+        <Button size="sm" disabled={disabled} onClick={() => act('confirmed')}>
+          Confirm visit
+        </Button>
+      );
     if (booking.status === 'confirmed')
       return (
         <Button size="sm" disabled={disabled} onClick={() => act('in_progress')}>
@@ -99,6 +105,12 @@ export function BookingActions({
   }
 
   if (role === 'vendor') {
+    if (booking.status === 'pending')
+      return (
+        <Button size="sm" disabled={disabled} onClick={() => act('confirmed')}>
+          Confirm booking
+        </Button>
+      );
     if (booking.status === 'broadcast') {
       return (
         <Dialog>
@@ -128,11 +140,14 @@ export function BookingActions({
                     No available caregivers
                   </SelectItem>
                 )}
-                <SelectItem value="none">No caregiver yet</SelectItem>
               </SelectContent>
             </Select>
             <DialogFooter>
-              <Button disabled={disabled} onClick={() => act('confirmed', caregiverId)}>
+              <Button
+                disabled={disabled || caregiverId === 'none'}
+                title={caregiverId === 'none' ? 'Select a caregiver from your roster' : undefined}
+                onClick={() => act('confirmed', caregiverId)}
+              >
                 Confirm booking
               </Button>
             </DialogFooter>
