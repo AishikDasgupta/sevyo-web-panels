@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Builds
+.next/
+dist/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Prisma
+apps/api/prisma/migrations/dev.db
+
+# Uploads (runtime artifacts)
+apps/api/uploads/
+
+# Testing
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/!packages/shared-types/dist/

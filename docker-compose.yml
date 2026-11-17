@@ -1,0 +1,24 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sevyo-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: sevyo_root
+      MYSQL_DATABASE: sevyo
+      MYSQL_USER: sevyo
+      MYSQL_PASSWORD: sevyo_pass
+      TZ: Asia/Kolkata
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3306:3306"
+    volumes:
+      - sevyo_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-psevyo_root"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sevyo_mysql_data:

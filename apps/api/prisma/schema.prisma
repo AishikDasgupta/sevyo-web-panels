@@ -1,0 +1,264 @@
+// Sevyo — Prisma schema mirroring SEVYO_WEBAPP_DOC.md §4 (MySQL 8).
+// All tables: BIGINT UNSIGNED AUTO_INCREMENT PK, utf8mb4, created_at/updated_at.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ===== 4.1 users ===== */
+model User {
+  id              BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  name            String   @db.VarChar(150)
+  email           String   @unique @db.VarChar(255)
+  passwordHash    String   @map("password_hash") @db.VarChar(255)
+  phone           String?  @db.VarChar(20)
+  role            UserRole
+  status          UserStatus @default(active)
+  defaultAddress  String?  @map("default_address") @db.VarChar(500)
+  avatarUrl       String?  @map("avatar_url") @db.VarChar(500)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  vendor         Vendor?
+  caregiver      Caregiver?
+  bookings       Booking[]
+  reviews        Review[]
+  familyContacts FamilyContact[]
+  refreshTokens  RefreshToken[]
+
+  @@index([role])
+  @@map("users")
+}
+
+// ===== 4.2 vendors ===== */
+model Vendor {
+  id            BigInt       @id @default(autoincrement()) @db.UnsignedBigInt
+  userId        BigInt       @unique @db.UnsignedBigInt
+  agencyName    String       @map("agency_name") @db.VarChar(200)
+  logoUrl       String?      @map("logo_url") @db.VarChar(500)
+  location      String?      @db.VarChar(255)
+  contactEmail  String?      @map("contact_email") @db.VarChar(255)
+  contactPhone  String?      @map("contact_phone") @db.VarChar(20)
+  status        VendorStatus @default(pending)
+  rating        Decimal      @default(0) @db.Decimal(3, 2)
+  revenueTotal  Decimal      @default(0) @map("revenue_total") @db.Decimal(12, 2)
+  memberSince   DateTime?    @map("member_since") @db.Date
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caregivers Caregiver[]
+  bookings   Booking[]
+  reviews    Review[]
+
+  @@map("vendors")
+}
+
+// ===== 4.3 services ===== */
+model Service {
+  id        BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  name      String            @unique @db.VarChar(150)
+  category  ServiceCategory   @default(scheduled)
+  isActive  Boolean           @default(true) @map("is_active")
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
+
+  bookings Booking[]
+
+  @@map("services")
+}
+
+// ===== 4.4 specializations ===== */
+model Specialization {
+  id   BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  name String @unique @db.VarChar(100)
+
+  caregivers CaregiverSpecialization[]
+
+  @@map("specializations")
+}
+
+// ===== 4.5 caregivers ===== */
+model Caregiver {
+  id               BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  userId           BigInt            @unique @db.UnsignedBigInt
+  vendorId         BigInt?           @db.UnsignedBigInt
+  type             CaregiverType
+  pricePerHour     Decimal           @default(0) @map("price_per_hour") @db.Decimal(10, 2)
+  bio              String?           @db.Text
+  experienceYears  Int               @default(0) @map("experience_years") @db.TinyInt
+  rating           Decimal           @default(0) @db.Decimal(3, 2)
+  reviewsCount     Int               @default(0) @map("reviews_count") @db.Int
+  available        Boolean           @default(true)
+  verified         Boolean           @default(false)
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendor          Vendor?                   @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  specializations CaregiverSpecialization[]
+  bookings        Booking[]
+  reviews         Review[]
+
+  @@index([type])
+  @@index([available])
+  @@map("caregivers")
+}
+
+// ===== 4.6 caregiver_specializations (join table) ===== */
+model CaregiverSpecialization {
+  caregiverId      BigInt @db.UnsignedBigInt
+  specializationId BigInt @db.UnsignedBigInt
+
+  caregiver      Caregiver      @relation(fields: [caregiverId], references: [id], onDelete: Cascade)
+  specialization Specialization @relation(fields: [specializationId], references: [id], onDelete: Cascade)
+
+  @@id([caregiverId, specializationId])
+  @@map("caregiver_specializations")
+}
+
+// ===== 4.7 bookings ===== */
+model Booking {
+  id             BigInt              @id @default(autoincrement()) @db.UnsignedBigInt
+  userId         BigInt              @db.UnsignedBigInt
+  caregiverId    BigInt?             @db.UnsignedBigInt
+  vendorId       BigInt?             @db.UnsignedBigInt
+  serviceId      BigInt              @db.UnsignedBigInt
+  scheduledDate  DateTime            @map("scheduled_date") @db.Date
+  scheduledTime  DateTime            @map("scheduled_time") @db.Time(0)
+  durationHours  Decimal             @default(1) @map("duration_hours") @db.Decimal(4, 2)
+  visitLocation  VisitLocation       @default(home) @map("visit_location")
+  address        String?             @db.VarChar(500)
+  status         BookingStatus       @default(pending)
+  paymentMethod  PaymentMethod       @default(cash) @map("payment_method")
+  paymentStatus  PaymentStatus       @default(unpaid) @map("payment_status")
+  price          Decimal             @default(0) @db.Decimal(10, 2)
+  notes          String?             @db.Text
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime            @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caregiver Caregiver? @relation(fields: [caregiverId], references: [id], onDelete: SetNull)
+  vendor    Vendor?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  service   Service    @relation(fields: [serviceId], references: [id])
+  review    Review?
+
+  @@index([status])
+  @@index([userId])
+  @@index([caregiverId])
+  @@map("bookings")
+}
+
+// ===== 4.8 reviews ===== */
+model Review {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  bookingId   BigInt    @unique @db.UnsignedBigInt
+  userId      BigInt    @db.UnsignedBigInt
+  caregiverId BigInt?   @db.UnsignedBigInt
+  vendorId    BigInt?   @db.UnsignedBigInt
+  rating      Int       @db.TinyInt
+  comment     String?   @db.Text
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+
+  booking   Booking    @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  caregiver Caregiver? @relation(fields: [caregiverId], references: [id], onDelete: SetNull)
+  vendor    Vendor?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  @@map("reviews")
+}
+
+// ===== 4.9 family_contacts ===== */
+model FamilyContact {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    BigInt   @db.UnsignedBigInt
+  name      String   @db.VarChar(150)
+  phone     String   @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("family_contacts")
+}
+
+// ===== 4.10 refresh_tokens ===== */
+model RefreshToken {
+  id        BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  userId    BigInt   @db.UnsignedBigInt
+  tokenHash String   @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime @map("expires_at") @db.Timestamp(0)
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ===== Enums ===== */
+enum UserRole {
+  user
+  vendor
+  resource
+  admin
+}
+
+enum UserStatus {
+  active
+  inactive
+  suspended
+}
+
+enum VendorStatus {
+  active
+  pending
+  suspended
+}
+
+enum CaregiverType {
+  nurse
+  caregiver
+  physiotherapist
+  lab
+  mental_health
+  elder_care
+  pediatric
+}
+
+enum ServiceCategory {
+  instant
+  scheduled
+  care
+}
+
+enum VisitLocation {
+  home
+  site
+}
+
+enum BookingStatus {
+  pending
+  broadcast
+  confirmed
+  in_progress
+  completed
+  cancelled
+  expired
+}
+
+enum PaymentMethod {
+  cash
+  online
+}
+
+enum PaymentStatus {
+  unpaid
+  pending
+  paid
+}
