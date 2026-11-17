@@ -106,3 +106,75 @@
     text-transform: capitalize;
   }
 }
+@layer utilities {
+  /* Subtle blueprint grid for hero/CTA backgrounds */
+  .bg-blueprint {
+    background-image:
+      radial-gradient(circle at 1px 1px, hsl(220 72% 41% / 0.12) 1px, transparent 0),
+      linear-gradient(to bottom, hsl(220 72% 41% / 0.05), transparent 60%);
+    background-size: 22px 22px, 100% 100%;
+  }
+
+  /* Floating card drift */
+  @keyframes hero-float {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-14px) rotate(-2deg); }
+  }
+  .animate-hero-float {
+    animation: hero-float 6s ease-in-out infinite;
+  }
+  @keyframes hero-float-late {
+    0%, 100% { transform: translateY(0) rotate(2deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+  }
+  .animate-hero-float-late {
+    animation: hero-float-late 7s ease-in-out 1.2s infinite;
+  }
+
+  /* Infinite service marquee */
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .animate-marquee {
+    animation: marquee 32s linear infinite;
+  }
+  .marquee-paused:hover .animate-marquee {
+    animation-play-state: paused;
+  }
+
+  /* Button shine sweep on hover */
+  @keyframes shine {
+    from { transform: translateX(-120%) skewX(-18deg); }
+    to { transform: translateX(240%) skewX(-18deg); }
+  }
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    transform: translateX(-120%) skewX(-18deg);
+    pointer-events: none;
+  }
+  .btn-shine:hover::after {
+    animation: shine 0.9s ease forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-hero-float,
+    .animate-hero-float-late,
+    .animate-marquee,
+    .fade-section {
+      animation: none !important;
+      transition: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+}
