@@ -195,6 +195,21 @@ export interface AdminStats {
         color: string;
     }[];
 }
+export interface RazorpayOrderResponse {
+    orderId: string;
+    /** Amount in paise (INR × 100). */
+    amount: number;
+    currency: string;
+    /** Publishable Razorpay key id for the checkout widget. */
+    keyId: string;
+    bookingId: string;
+}
+export interface RazorpayVerifyInput {
+    bookingId: string;
+    razorpayOrderId: string;
+    razorpayPaymentId: string;
+    razorpaySignature: string;
+}
 export interface ApiAuthResponse {
     user: AuthUser;
 }

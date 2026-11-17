@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { CARE_SERVICES } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -31,15 +32,6 @@ const STATS = [
   { value: '10K+', label: 'Care Visits Delivered' },
   { value: '4.8★', label: 'Average Rating' },
   { value: '6', label: 'Care Categories' },
-];
-
-const CARE_SERVICES = [
-  { icon: '🤲', label: 'Attendants', desc: 'Personal care attendants for daily assistance', site: false },
-  { icon: '🏥', label: 'Nurses', desc: 'Licensed registered nurses for medical care', site: false },
-  { icon: '💪', label: 'Physiotherapists', desc: 'Physical therapy and rehabilitation', site: true },
-  { icon: '🧠', label: 'Mental Health', desc: 'Emotional and psychological support', site: true },
-  { icon: '🧪', label: 'Labs', desc: 'Lab tests and home sample collection', site: true },
-  { icon: '🛠️', label: 'Equipment Providers', desc: 'Medical equipment supply and support', site: true },
 ];
 
 export default function AboutPage() {

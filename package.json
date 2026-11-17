@@ -4,7 +4,7 @@
   "private": true,
   "description": "Sevyo — Home healthcare marketplace (Next.js + Express + MySQL monorepo)",
   "scripts": {
-    "dev": "npm run dev --prefix apps/api & npm run dev --prefix apps/web",
+    "dev": "node scripts/dev.mjs",
     "dev:web": "npm run dev --prefix apps/web",
     "dev:api": "npm run dev --prefix apps/api",
     "build": "npm run build --prefix packages/shared-types && npm run build --prefix apps/api && npm run build --prefix apps/web",
@@ -12,6 +12,7 @@
     "typecheck": "npm run typecheck --prefix packages/shared-types && npm run typecheck --prefix apps/api && npm run typecheck --prefix apps/web",
     "test": "npm run test --prefix apps/api",
     "db:up": "docker compose up -d mysql",
+    "db:local": "npm run db:local --prefix apps/api",
     "db:migrate": "npm run db:migrate --prefix apps/api",
     "db:seed": "npm run db:seed --prefix apps/api",
     "db:studio": "npm run db:studio --prefix apps/api"

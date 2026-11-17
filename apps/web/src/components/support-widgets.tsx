@@ -1,15 +1,12 @@
 import { Phone } from 'lucide-react';
-
-const CONTACT_PHONE = '+919876543210';
-const WHATSAPP_NUMBER = '919876543210';
-const WA_MESSAGE = encodeURIComponent('Hi Sevyo, I need help with a booking.');
+import { CONTACT_PHONE, WHATSAPP_URL } from '@/lib/constants';
 
 /** Floating WhatsApp + call widgets (user panel only). */
 export function SupportWidgets() {
   return (
     <div className="fixed bottom-5 right-5 z-40 flex flex-col gap-3">
       <a
-        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WA_MESSAGE}`}
+        href={WHATSAPP_URL}
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"

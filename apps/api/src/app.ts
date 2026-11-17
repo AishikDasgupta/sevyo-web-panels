@@ -8,6 +8,7 @@ import { apiRouter } from './routes';
 import { errorHandler } from './middleware/error-handler';
 import { env } from './config/env';
 import { uploadsStaticPath } from './middleware/upload';
+import { prisma } from './lib/prisma';
 
 export const app = express();
 
@@ -40,6 +41,16 @@ app.use('/api', globalLimiter);
 app.use('/uploads', express.static(uploadsStaticPath, { maxAge: '7d', immutable: false }));
 
 app.use('/api', apiRouter);
+
+// Liveness + readiness probe (used by process managers and deploy pipelines)
+app.get('/api/health', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', db: 'up' });
+  } catch {
+    res.status(503).json({ status: 'degraded', db: 'down' });
+  }
+});
 
 // 404 for unknown API routes
 app.use('/api', (_req, res) => {

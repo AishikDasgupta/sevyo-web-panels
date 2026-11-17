@@ -25,13 +25,13 @@
 
 ## ⚠️ exFAT drive caveats (D:\)
 
-- Three directory entries are OS-corrupted and locked (EPERM): `apps/web/lib/`,
-  `apps/web/components/ui/`, `packages/shared-types/src/`. Their content was rebuilt at
-  new paths (`apps/web/src/...`) or hand-regenerated (`dist/`). Leave them alone.
+- Three directory entries were OS-corrupted and locked (EPERM): `apps/web/lib/`,
+  `apps/web/components/ui/`, `packages/shared-types/src/`. `shared-types/src/` and `dist/`
+  have since been rebuilt and committed (`npm run build --prefix packages/shared-types`);
+  `dist/` is committed on purpose — the `file:` dependency consumes it directly.
+  The two `apps/web` duplicates still live under `apps/web/src/{lib,components}`.
 - Elevated `chkdsk D: /f` would reclaim them; afterwards the duplicates under
   `apps/web/src/{lib,components}` could be merged back (optional).
-- Because of the locked `packages/shared-types/src/`, `npm install` in `apps/web`
-  fails (the `file:` dep copies that dir). Deps are already installed; after chkdsk it works again.
 - exFAT also breaks webpack's speculative `readlink` calls (`EISDIR`). Fixed by
   `apps/web/exfat-readlink-fix.cjs` wired into web dev/build/start scripts +
   `next.config.mjs` (`resolve.symlinks=false`, `cache=false`). On NTFS none of this is needed.
@@ -39,16 +39,27 @@
   `apps/api/src/*` + `tests/`); all ~49 files were rebuilt from contract sources
   (schema.prisma, seed.ts, app/server entrypoints, shared-types d.ts, web client).
 
-## ▶️ To run end-to-end (needs Docker for MySQL)
+## ▶️ To run end-to-end
+
+Option A — no Docker (ephemeral in-memory MySQL 8; data is discarded on stop):
+
+```bash
+npm run db:local                               # starts MySQL, writes DATABASE_URL to apps/api/.env
+npm run db:deploy --prefix apps/api            # apply migrations
+npm run db:seed   --prefix apps/api            # demo data
+npm run dev --prefix apps/api                  # :4000
+npm run dev --prefix apps/web                  # :3000
+```
+
+Option B — Docker:
 
 ```bash
 docker compose up -d mysql
-npm install --no-audit --no-fund --prefix apps/api   # already installed
 cp apps/api/.env.example apps/api/.env
-npm run db:migrate --prefix apps/api                 # prisma migrate dev
-npm run db:seed --prefix apps/api
-npm run dev --prefix apps/api                        # :4000
-npm run dev --prefix apps/web                        # :3000
+npm run db:deploy --prefix apps/api
+npm run db:seed   --prefix apps/api
+npm run dev --prefix apps/api                  # :4000
+npm run dev --prefix apps/web                  # :3000
 ```
 
 Demo logins (password `sevyo123`): `john@example.com` (user),
@@ -57,8 +68,13 @@ Demo logins (password `sevyo123`): `john@example.com` (user),
 
 ## Remaining (optional / future work)
 
-1. Smoke-test the running app against real MySQL (migrate → seed → click through all portals).
-2. Booking `expired` transitions (cron) and payment gateway integration (doc §7 mentions "coming soon").
+1. Click-through all portals against the live app (build + tests are green).
+2. Payment is integrated via Razorpay (test keys supported): booking with
+   paymentMethod=online opens Razorpay checkout; `POST /api/payments/razorpay/order`
+   creates/reuses the order (stored on `bookings.razorpay_order_id`) and
+   `POST /api/payments/razorpay/verify` checks the signature and marks the booking paid.
+   A "Pay now" button appears for unpaid online bookings on /user/bookings.
+   Remaining: booking `expired` transitions (cron) and going live with real keys.
 3. After chkdsk reclaims the corrupt entries: optionally merge `apps/web/src/{lib,components/ui}`
    back to their original paths, restore `packages/shared-types/src/index.ts`, and drop the
    exfat shim from web scripts if moving to NTFS.

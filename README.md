@@ -18,8 +18,10 @@ Express + Prisma API, MySQL 8.
 Prereqs: Node 20+, Docker (for MySQL).
 
 ```bash
-# 1. Database
-docker compose up -d mysql
+# 1. Database — either:
+docker compose up -d mysql        # Docker
+# ...or (no Docker):
+npm run db:local                  # ephemeral in-memory MySQL 8 (Ctrl+C to stop)
 
 # 2. API
 npm install --no-audit --no-fund --prefix apps/api
@@ -44,6 +46,14 @@ npm run dev --prefix apps/web                 # http://localhost:3000
 | Admin | `admin@sevyo.co.in` |
 | Vendor agency | any vendor user from seed (see `apps/api/prisma/seed.ts`) |
 | Caregiver/resource | `sarah@sevyo.co.in` |
+
+### Payments (Razorpay)
+
+Set `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` in `apps/api/.env` (test keys work; get them
+from dashboard.razorpay.com -> API keys). "Pay online" bookings create a Razorpay order
+server-side, open the secure checkout in the browser, and verify the signature on our
+API before marking the booking `paid`. Unpaid online bookings show a "Pay now" button on
+/user/bookings. Without keys, online payment is disabled server-side and cash booking is unaffected.
 
 ## Scripts
 

@@ -6,6 +6,7 @@ import type { Booking } from '@sevyo/shared-types';
 import { api } from '@/lib/api-client';
 import { BookingSummaryCard } from '@/components/booking/booking-summary-card';
 import { BookingActions } from '@/components/booking/booking-actions';
+import { PayNowButton } from '@/components/booking/pay-now-button';
 import { BookingStatusFilter } from '@/components/booking/booking-status-filter';
 import { StatCard } from '@/components/stat-card';
 import { PageHeader } from '@/components/page-header';
@@ -58,7 +59,8 @@ export default function UserBookingsPage() {
           {listQuery.data.map((b) => (
             <div key={b.id}>
               <BookingSummaryCard booking={b} />
-              <div className="mt-2 flex justify-end">
+              <div className="mt-2 flex items-center justify-end gap-2">
+                <PayNowButton booking={b} />
                 <BookingActions booking={b} role="user" />
               </div>
             </div>

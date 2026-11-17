@@ -7,6 +7,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Stars } from '@/components/stars';
+import { CARE_SERVICES } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Professional Care at Home',
@@ -65,15 +66,6 @@ async function getInstantServiceNames(): Promise<string[]> {
     return FALLBACK_INSTANT_SERVICES;
   }
 }
-
-const CARE_SERVICES = [
-  { icon: '🤲', label: 'Attendants', desc: 'Personal care attendants for daily assistance', site: false },
-  { icon: '🏥', label: 'Nurses', desc: 'Licensed registered nurses for medical care', site: false },
-  { icon: '💪', label: 'Physiotherapists', desc: 'Physical therapy and rehabilitation', site: true },
-  { icon: '🧠', label: 'Mental Health', desc: 'Emotional and psychological support', site: true },
-  { icon: '🧪', label: 'Labs', desc: 'Lab tests and home sample collection', site: true },
-  { icon: '🛠️', label: 'Equipment Providers', desc: 'Medical equipment supply and support', site: true },
-];
 
 const STEPS = [
   {

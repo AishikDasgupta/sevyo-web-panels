@@ -23,6 +23,8 @@ export const env = {
     .filter(Boolean),
   uploadsDir: path.resolve(process.cwd(), process.env.UPLOAD_DIR ?? 'uploads'),
   cookieDomain: process.env.COOKIE_DOMAIN || undefined,
+  razorpayKeyId: process.env.RAZORPAY_KEY_ID ?? '',
+  razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET ?? '',
 
   // Cookie names shared with the web client (see apps/web/src/lib/auth.ts)
   accessCookie: 'access_token',

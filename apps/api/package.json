@@ -13,6 +13,7 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
+    "db:local": "node scripts/dev-local-db.mjs",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
@@ -42,6 +43,7 @@
     "@types/multer": "^1.4.12",
     "@types/node": "^20.16.10",
     "@types/supertest": "^6.0.2",
+    "mysql-memory-server": "^1.18.0",
     "prisma": "^5.22.0",
     "supertest": "^7.0.0",
     "tsx": "^4.19.1",

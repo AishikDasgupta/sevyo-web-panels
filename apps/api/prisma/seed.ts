@@ -286,8 +286,8 @@ async function main() {
     });
   }
   await prisma.$executeRaw`UPDATE caregivers c
-    SET c.rating = (SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.caregiver_id = c.id),
-        c.reviews_count = (SELECT COUNT(*) FROM reviews r WHERE r.caregiver_id = c.id)`;
+    SET c.rating = (SELECT COALESCE(AVG(r.rating), 0) FROM reviews r WHERE r.caregiverId = c.id),
+        c.reviews_count = (SELECT COUNT(*) FROM reviews r WHERE r.caregiverId = c.id)`;
   console.log(`[seed] reviews: ${completedBookings.length}`);
 
   // ---- Family contacts for John Doe (replaces localStorage SOS list)
@@ -302,7 +302,7 @@ async function main() {
   // ---- Recompute vendor revenue from paid/pending completed bookings
   await prisma.$executeRaw`UPDATE vendors v
     SET v.revenue_total = COALESCE(
-      (SELECT SUM(b.price) FROM bookings b WHERE b.vendor_id = v.id AND b.status = 'completed' AND b.payment_status IN ('paid','pending')), 0)`;
+      (SELECT SUM(b.price) FROM bookings b WHERE b.vendorId = v.id AND b.status = 'completed' AND b.payment_status IN ('paid','pending')), 0)`;
 
   console.log('[seed] done ✔');
 }

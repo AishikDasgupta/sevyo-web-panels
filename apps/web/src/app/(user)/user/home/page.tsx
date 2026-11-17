@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import type { Booking, BookingVisitLocation, PaymentMethod, Service } from '@sevyo/shared-types';
+import type { Booking, PaymentMethod, Service } from '@sevyo/shared-types';
 import { api } from '@/lib/api-client';
 import { useMe } from '@/lib/use-me';
 import { serviceEmoji } from '@/lib/constants';
+import { payForBooking } from '@/lib/razorpay';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +49,8 @@ export default function UserHomePage() {
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [duration, setDuration] = useState(1);
-  const [location, setLocation] = useState<BookingVisitLocation>('home');
+  // Instant services (nurse procedures) are delivered at home only. At-site
+  // visits are available for physiotherapy, labs, and mental health.
   const [address, setAddress] = useState('');
   const [payment, setPayment] = useState<PaymentMethod>('cash');
   const [notes, setNotes] = useState('');
@@ -60,14 +62,31 @@ export default function UserHomePage() {
         scheduledDate: date,
         scheduledTime: time,
         durationHours: duration,
-        visitLocation: location,
+        visitLocation: 'home',
         address: address || undefined,
         paymentMethod: payment,
         notes: notes || undefined,
       }),
-    onSuccess: () => {
+    onSuccess: async (booking) => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      if (payment === 'online') {
+        toast.success('Booking placed — complete payment to confirm');
+        try {
+          const ok = await payForBooking(booking, {
+            name: meQuery.data?.name,
+            email: meQuery.data?.email,
+            contact: meQuery.data?.phone ?? undefined,
+          });
+          if (ok) await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : 'Could not start online payment — you can pay later from My Bookings');
+        }
+        setSelected(null);
+        router.push('/user/bookings');
+        return;
+      }
       toast.success('Booking placed — searching for a nurse');
+      setSelected(null);
       router.push('/user/bookings');
     },
     onError: (err: Error) => toast.error(err.message),
@@ -78,10 +97,6 @@ export default function UserHomePage() {
     if (!selected) return;
     if (!date || !time) {
       toast.error('Please pick a date and time');
-      return;
-    }
-    if (location === 'site' && !address.trim()) {
-      toast.error('An address is required for site visits');
       return;
     }
     bookMutation.mutate();
@@ -199,34 +214,16 @@ export default function UserHomePage() {
 
             <div className="space-y-1.5">
               <Label>Visit location</Label>
-              <RadioGroup
-                value={location}
-                onValueChange={(v) => setLocation(v as BookingVisitLocation)}
-                className="grid grid-cols-2 gap-3"
-              >
-                <label
-                  className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium transition-colors',
-                    location === 'home' && 'border-primary bg-primary/5',
-                  )}
-                >
-                  <RadioGroupItem value="home" /> 🏠 At Home
-                </label>
-                <label
-                  className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium transition-colors',
-                    location === 'site' && 'border-primary bg-primary/5',
-                  )}
-                >
-                  <RadioGroupItem value="site" /> 🏢 At Site
-                </label>
-              </RadioGroup>
+              <p className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-slate-50/60 p-3 text-sm font-medium">
+                🏠 At Home
+                <span className="text-[11px] font-normal text-muted-foreground">
+                  Need care at your office or site? Book physiotherapy, labs, or mental health — they support on-site visits
+                </span>
+              </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="bk-address">
-                Address {location === 'site' && <span className="text-destructive">(required)</span>}
-              </Label>
+              <Label htmlFor="bk-address">Address (optional)</Label>
               <Textarea
                 id="bk-address"
                 placeholder="Flat, street, area, city…"
@@ -260,8 +257,8 @@ export default function UserHomePage() {
                 </label>
               </RadioGroup>
               {payment === 'online' && (
-                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
-                  Payment collected at visit — gateway coming soon
+                <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-medium text-primary">
+                  You&apos;ll complete payment on Razorpay&apos;s secure checkout after placing the booking (test mode).
                 </p>
               )}
             </div>

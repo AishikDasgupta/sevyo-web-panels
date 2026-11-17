@@ -7,7 +7,7 @@ async function main() {
     await prisma.$connect();
     console.log('[api] MySQL connected');
   } catch (err) {
-    console.error('[api] Failed to connect to MySQL — is it running? (docker compose up -d mysql)');
+    console.error('[api] Failed to connect to MySQL — is it running? (Docker: docker compose up -d mysql · no Docker: npm run db:local)');
     console.error(err);
     process.exit(1);
   }

@@ -4,6 +4,8 @@ import './exfat-readlink-fix.cjs';
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@sevyo/shared-types'],
+  // CI/verification may set DIST_DIR to avoid clobbering a running dev server's .next
+  distDir: process.env.DIST_DIR ?? '.next',
   // exFAT: no symlinks exist (install-links=true); skip symlink resolution and
   // filesystem cache snapshotting, both of which do speculative readlinks that
   // crash on the exFAT driver (see exfat-readlink-fix.cjs).

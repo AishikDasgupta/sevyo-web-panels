@@ -6,7 +6,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { Booking, BookingVisitLocation, Caregiver, PaymentMethod, Service } from '@sevyo/shared-types';
 import { api } from '@/lib/api-client';
-import { caregiverTypeLabel } from '@/lib/constants';
+import { caregiverTypeLabel, SITE_ELIGIBLE_TYPES } from '@/lib/constants';
+import { payForBooking } from '@/lib/razorpay';
 import { fmtINR } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { AvatarOrInitial } from '@/components/avatar-or-initial';
@@ -54,6 +55,7 @@ export default function BookCaregiverPage() {
   }, [servicesQuery.data]);
 
   const cg = caregiverQuery.data;
+  const siteEligible = cg ? SITE_ELIGIBLE_TYPES.has(cg.type) : false;
 
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
@@ -78,8 +80,19 @@ export default function BookCaregiverPage() {
         paymentMethod: payment,
         notes: notes || undefined,
       }),
-    onSuccess: () => {
+    onSuccess: async (booking) => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+      if (payment === 'online') {
+        toast.success('Booking placed — complete payment to confirm');
+        try {
+          const ok = await payForBooking(booking);
+          if (ok) await queryClient.invalidateQueries({ queryKey: ['bookings'] });
+        } catch (err) {
+          toast.error(err instanceof Error ? err.message : 'Could not start online payment — you can pay later from My Bookings');
+        }
+        router.push('/user/bookings');
+        return;
+      }
       toast.success('Booking placed — see it in My Bookings');
       router.push('/user/bookings');
     },
@@ -183,28 +196,37 @@ export default function BookCaregiverPage() {
 
             <div className="space-y-1.5">
               <Label>Visit location</Label>
-              <RadioGroup
-                value={location}
-                onValueChange={(v) => setLocation(v as BookingVisitLocation)}
-                className="grid grid-cols-2 gap-3"
-              >
-                <label
-                  className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium transition-colors',
-                    location === 'home' && 'border-primary bg-primary/5',
-                  )}
+              {siteEligible ? (
+                <RadioGroup
+                  value={location}
+                  onValueChange={(v) => setLocation(v as BookingVisitLocation)}
+                  className="grid grid-cols-2 gap-3"
                 >
-                  <RadioGroupItem value="home" /> 🏠 At Home
-                </label>
-                <label
-                  className={cn(
-                    'flex cursor-pointer items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium transition-colors',
-                    location === 'site' && 'border-primary bg-primary/5',
-                  )}
-                >
-                  <RadioGroupItem value="site" /> 🏢 At Site
-                </label>
-              </RadioGroup>
+                  <label
+                    className={cn(
+                      'flex cursor-pointer items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium transition-colors',
+                      location === 'home' && 'border-primary bg-primary/5',
+                    )}
+                  >
+                    <RadioGroupItem value="home" /> 🏠 At Home
+                  </label>
+                  <label
+                    className={cn(
+                      'flex cursor-pointer items-center gap-2 rounded-xl border border-border p-3 text-sm font-medium transition-colors',
+                      location === 'site' && 'border-primary bg-primary/5',
+                    )}
+                  >
+                    <RadioGroupItem value="site" /> 🏢 At Site
+                  </label>
+                </RadioGroup>
+              ) : (
+                <p className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-slate-50/60 p-3 text-sm font-medium">
+                  🏠 At Home
+                  <span className="text-[11px] font-normal text-muted-foreground">
+                    On-site visits available for physiotherapy, labs, and mental health only
+                  </span>
+                </p>
+              )}
             </div>
 
             <div className="space-y-1.5">
@@ -244,8 +266,8 @@ export default function BookCaregiverPage() {
                 </label>
               </RadioGroup>
               {payment === 'online' && (
-                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
-                  Payment collected at visit — gateway coming soon
+                <p className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-xs font-medium text-primary">
+                  You&apos;ll complete payment on Razorpay&apos;s secure checkout after placing the booking (test mode).
                 </p>
               )}
             </div>
